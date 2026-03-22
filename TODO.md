@@ -279,23 +279,28 @@
 
 ---
 
-## Phase 7: Anomaly & Multi-Author Detection
+## Phase 7: Anomaly & Multi-Author Detection ✓
 
-### 7.1 Sliding window analysis
-- [ ] Configurable window size (default: 500 words, slide by 100)
-- [ ] Per-window feature extraction
-- [ ] Anomaly score per window position
-- [ ] **File**: `src/identity/anomaly.rs` (rewrite)
+### 7.1 Sliding window analysis ✓
+- [x] Configurable window size (default: 500 words, slide by 100)
+- [x] Per-window feature extraction with any feature set
+- [x] Anomaly score per window (RMS z-score)
+- [x] Top deviating features per window
+- [x] **File**: `src/identity/anomaly.rs` (rewritten)
 
-### 7.2 Style change point detection
-- [ ] Binary segmentation algorithm
-- [ ] Change points with confidence scores
-- [ ] **File**: `src/identity/changepoint.rs`
+### 7.2 Style change point detection ✓
+- [x] Binary segmentation algorithm (recursive)
+- [x] Change points with confidence scores (sigmoid-calibrated)
+- [x] Shift type classification (gradual vs abrupt)
+- [x] Key features driving each change point
+- [x] **File**: `src/identity/changepoint.rs`
 
-### 7.3 Multi-author segmentation
-- [ ] Per-segment author attribution
-- [ ] Multiple candidate profile support
-- [ ] **File**: `src/identity/segmentation.rs`
+### 7.3 Multi-author segmentation ✓
+- [x] Per-segment author attribution via feature distance
+- [x] Multiple candidate profile support with confidence margins
+- [x] Author count estimation
+- [x] Full pipeline: window analysis → change points → segments → attribution
+- [x] **File**: `src/identity/segmentation.rs`
 
 ---
 
