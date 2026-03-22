@@ -181,6 +181,30 @@ enum Commands {
         #[arg(long, default_value = "text")]
         format: String,
     },
+
+    /// Start the Provenance API server
+    #[cfg(feature = "server")]
+    Serve {
+        /// Host to bind to
+        #[arg(long, default_value = "127.0.0.1")]
+        host: String,
+
+        /// Port to listen on
+        #[arg(long, default_value = "3000")]
+        port: u16,
+
+        /// Require API key authentication
+        #[arg(long)]
+        require_auth: bool,
+
+        /// Rate limit (requests per minute, 0 = unlimited)
+        #[arg(long, default_value = "60")]
+        rate_limit: u32,
+
+        /// Maximum request body size in MB
+        #[arg(long, default_value = "100")]
+        max_body_mb: usize,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -329,6 +353,30 @@ fn main() -> anyhow::Result<()> {
             let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
             let report = provenance::bias_audit_report(output_format)?;
             println!("{report}");
+        }
+        #[cfg(feature = "server")]
+        Commands::Serve {
+            host,
+            port,
+            require_auth,
+            rate_limit,
+            max_body_mb,
+        } => {
+            let config = provenance::api::server::ServerConfig {
+                host,
+                port,
+                max_body_size: max_body_mb * 1024 * 1024,
+                default_rate_limit_rpm: rate_limit,
+                max_concurrent_jobs: 10,
+                auth: provenance::api::auth::ApiKeyConfig {
+                    keys: std::collections::HashMap::new(),
+                    require_auth,
+                },
+            };
+
+            let rt = tokio::runtime::Runtime::new()?;
+            rt.block_on(provenance::api::server::start(config))
+                .map_err(|e| anyhow::anyhow!("Server error: {e}"))?;
         }
     }
 
