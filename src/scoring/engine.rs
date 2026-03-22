@@ -1,8 +1,14 @@
 use serde::{Deserialize, Serialize};
 
 use crate::analysis::AnalysisResult;
+use crate::analysis::register::RegisterClassification;
+use crate::analysis::baselines::RegisterBaselineReport;
 use crate::forensics::ForensicReport;
 use crate::identity::comparison::ComparisonResult;
+use crate::scoring::acs::AuthorshipConfidenceScore;
+use crate::scoring::pii::ProcessIntegrityIndex;
+use crate::scoring::anomalies::AnomalyReport;
+use crate::scoring::content_design::EvaluatorReport;
 
 /// Unified score combining all analysis layers.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12,6 +18,18 @@ pub struct UnifiedScore {
     pub comparison: Option<ComparisonResult>,
     pub overall_confidence: Option<f64>,
     pub audit: AuditTrail,
+    /// Register classification for the analyzed text.
+    pub register: Option<RegisterClassification>,
+    /// Register baseline comparison.
+    pub baseline_report: Option<RegisterBaselineReport>,
+    /// Authorship Confidence Score.
+    pub acs: Option<AuthorshipConfidenceScore>,
+    /// Process Integrity Index.
+    pub pii: Option<ProcessIntegrityIndex>,
+    /// Anomaly flags.
+    pub anomaly_report: Option<AnomalyReport>,
+    /// Evaluator-facing report content.
+    pub evaluator_report: Option<EvaluatorReport>,
 }
 
 /// Audit trail for reproducibility.
@@ -123,6 +141,52 @@ pub fn score(
         comparison: comparison.cloned(),
         overall_confidence,
         audit,
+        register: None,
+        baseline_report: None,
+        acs: None,
+        pii: None,
+        anomaly_report: None,
+        evaluator_report: None,
+    }
+}
+
+/// Aggregate scores from all layers, including Phase 13-15 components.
+pub fn score_full(
+    forensic_report: &ForensicReport,
+    analysis_result: &AnalysisResult,
+    comparison: Option<&ComparisonResult>,
+    register: RegisterClassification,
+    baseline_report: RegisterBaselineReport,
+    acs: AuthorshipConfidenceScore,
+    pii_score: ProcessIntegrityIndex,
+    anomaly_report: AnomalyReport,
+) -> UnifiedScore {
+    let overall_confidence = comparison.map(|c| c.confidence.value);
+
+    let audit = AuditTrail::new(
+        &forensic_report.metadata.file_name,
+        &forensic_report.integrity.sha256,
+    );
+
+    let evaluator_report = crate::scoring::content_design::generate(
+        &acs,
+        &pii_score,
+        &anomaly_report,
+        &register,
+    );
+
+    UnifiedScore {
+        forensic_report: forensic_report.clone(),
+        analysis_result: analysis_result.clone(),
+        comparison: comparison.cloned(),
+        overall_confidence,
+        audit,
+        register: Some(register),
+        baseline_report: Some(baseline_report),
+        acs: Some(acs),
+        pii: Some(pii_score),
+        anomaly_report: Some(anomaly_report),
+        evaluator_report: Some(evaluator_report),
     }
 }
 

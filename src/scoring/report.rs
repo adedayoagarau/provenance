@@ -134,6 +134,106 @@ pub fn render(score: &UnifiedScore) -> crate::utils::errors::Result<String> {
         r.push('\n');
     }
 
+    // Evaluator report (Phase 15)
+    if let Some(ref eval) = score.evaluator_report {
+        // Reliability disclosure — always first
+        r.push_str("── Reliability Disclosure ──\n");
+        for point in &eval.reliability_disclosure.points {
+            r.push_str(&format!("  • {point}\n"));
+        }
+        r.push_str(&format!("  Basis: {}\n\n", eval.reliability_disclosure.evidence_basis));
+
+        // Executive summary
+        r.push_str("── Executive Summary ──\n");
+        r.push_str(&format!("  {}\n\n", eval.executive_summary));
+
+        // Register context
+        r.push_str("── Register Context ──\n");
+        r.push_str(&format!("  {}\n", eval.register_context.summary));
+        r.push_str(&format!("  {}\n\n", eval.register_context.implication));
+    }
+
+    // Register classification
+    if let Some(ref reg) = score.register {
+        r.push_str("── Register Classification ──\n");
+        r.push_str(&format!("  Type:       {}\n", reg.label));
+        r.push_str(&format!("  Confidence: {:.0}%\n\n", reg.confidence * 100.0));
+    }
+
+    // ACS
+    if let Some(ref acs) = score.acs {
+        r.push_str("── Authorship Confidence Score (ACS) ──\n");
+        r.push_str(&format!("  Score:      {:.0}/100\n", acs.score));
+        r.push_str(&format!("  Range:      {:.0}–{:.0} (±{:.0})\n", acs.score_low, acs.score_high, acs.margin));
+        if let Some(ref eval) = score.evaluator_report {
+            r.push_str(&format!("  {}\n", eval.authorship_assessment.interpretation));
+            for caveat in &eval.authorship_assessment.caveats {
+                r.push_str(&format!("  Caveat: {caveat}\n"));
+            }
+        }
+        r.push('\n');
+    }
+
+    // PII
+    if let Some(ref pii_val) = score.pii {
+        r.push_str("── Process Integrity Index (PII) ──\n");
+        r.push_str(&format!("  Score:    {:.0}/100 ({})\n", pii_val.score, pii_val.level.label()));
+        r.push_str(&format!("  {}\n\n", pii_val.guidance));
+    }
+
+    // Register baselines
+    if let Some(ref baselines) = score.baseline_report {
+        r.push_str("── Register Baseline Comparison ──\n");
+        r.push_str(&format!("  Register: {}\n", baselines.register_label));
+        r.push_str(&format!("  Expected: {}  Atypical: {}  Anomalous: {}\n",
+            baselines.expected_count, baselines.atypical_count, baselines.anomalous_count));
+        for comp in &baselines.comparisons {
+            let marker = match comp.assessment {
+                crate::analysis::baselines::MetricAssessment::Expected => "  ",
+                crate::analysis::baselines::MetricAssessment::Atypical => "? ",
+                crate::analysis::baselines::MetricAssessment::Anomalous => "! ",
+            };
+            r.push_str(&format!("  {marker}{}\n", comp.explanation));
+        }
+        r.push('\n');
+    }
+
+    // Anomaly flags
+    if let Some(ref anomalies) = score.anomaly_report {
+        if !anomalies.flags.is_empty() {
+            r.push_str("── Anomaly Flags ──\n");
+            r.push_str(&format!("  {}\n", anomalies.summary));
+            for flag in &anomalies.flags {
+                let loc = match &flag.location {
+                    crate::scoring::anomalies::AnomalyLocation::DocumentLevel => "document".to_string(),
+                    crate::scoring::anomalies::AnomalyLocation::ParagraphRange { start, end } => format!("¶{start}-{end}"),
+                    crate::scoring::anomalies::AnomalyLocation::Section(s) => s.clone(),
+                };
+                r.push_str(&format!("  [{:6}] {:20} {:10} {}\n",
+                    flag.severity.label(),
+                    flag.anomaly_type.label(),
+                    loc,
+                    flag.description,
+                ));
+            }
+            if let Some(ref eval) = score.evaluator_report {
+                r.push_str(&format!("\n  Note: {}\n", eval.anomaly_narrative.framing_note));
+            }
+            r.push('\n');
+        }
+    }
+
+    // Recommendations
+    if let Some(ref eval) = score.evaluator_report {
+        if !eval.recommended_actions.is_empty() {
+            r.push_str("── Recommended Actions ──\n");
+            for (i, action) in eval.recommended_actions.iter().enumerate() {
+                r.push_str(&format!("  {}. {action}\n", i + 1));
+            }
+            r.push('\n');
+        }
+    }
+
     // Audit trail
     r.push_str("── Audit Trail ──\n");
     r.push_str(&format!("  Version:   Provenance v{}\n", score.audit.software_version));
