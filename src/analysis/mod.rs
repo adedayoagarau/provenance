@@ -4,6 +4,8 @@ pub mod semantic;
 pub mod stylometric;
 pub mod function_words;
 pub mod ngrams;
+pub mod register;
+pub mod baselines;
 
 use serde::{Deserialize, Serialize};
 

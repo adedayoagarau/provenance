@@ -3,6 +3,7 @@ pub mod integrity;
 pub mod format;
 pub mod timeline;
 pub mod tampering;
+pub mod docx;
 
 use crate::utils::errors::{self, Result};
 use serde::{Deserialize, Serialize};

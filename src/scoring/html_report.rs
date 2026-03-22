@@ -25,6 +25,14 @@ pub fn render(score: &UnifiedScore) -> Result<String> {
     html.push_str("<p class=\"subtitle\">Authorship Analysis Report</p>\n");
     html.push_str("</header>\n<main>\n");
 
+    // Reliability disclosure (always first)
+    if let Some(ref eval) = score.evaluator_report {
+        render_reliability_section(&mut html, eval);
+    }
+
+    // Executive summary + scores
+    render_scores_section(&mut html, score);
+
     // File info section
     render_file_section(&mut html, score);
 
@@ -48,9 +56,31 @@ pub fn render(score: &UnifiedScore) -> Result<String> {
         render_comparison_section(&mut html, score);
     }
 
+    // Feature importance explanation
+    if let Some(ref explained) = score.explained_decision {
+        render_explainability_section(&mut html, explained);
+    }
+
     // Tampering section
     if score.forensic_report.tampering.risk_score > 0.0 {
         render_tampering_section(&mut html, score);
+    }
+
+    // Register baselines
+    if let Some(ref baselines) = score.baseline_report {
+        render_baselines_section(&mut html, baselines);
+    }
+
+    // Anomaly flags
+    if let Some(ref anomalies) = score.anomaly_report {
+        if !anomalies.flags.is_empty() {
+            render_anomalies_section(&mut html, anomalies, score.evaluator_report.as_ref());
+        }
+    }
+
+    // Recommendations
+    if let Some(ref eval) = score.evaluator_report {
+        render_recommendations_section(&mut html, eval);
     }
 
     // Audit trail
@@ -248,6 +278,224 @@ fn render_tampering_section(html: &mut String, score: &UnifiedScore) {
     html.push_str("</section>\n");
 }
 
+fn render_reliability_section(html: &mut String, eval: &crate::scoring::content_design::EvaluatorReport) {
+    html.push_str("<section class=\"disclosure\">\n");
+    html.push_str("<h2>Important: Reliability Disclosure</h2>\n<ul>\n");
+    for point in &eval.reliability_disclosure.points {
+        html.push_str(&format!("<li>{}</li>\n", escape(point)));
+    }
+    html.push_str("</ul>\n");
+    html.push_str(&format!("<p class=\"evidence-basis\">{}</p>\n",
+        escape(&eval.reliability_disclosure.evidence_basis)));
+    html.push_str("</section>\n");
+}
+
+fn render_scores_section(html: &mut String, score: &UnifiedScore) {
+    html.push_str("<section>\n");
+
+    // Executive summary
+    if let Some(ref eval) = score.evaluator_report {
+        html.push_str(&format!("<p class=\"exec-summary\">{}</p>\n",
+            escape(&eval.executive_summary)));
+    }
+
+    // Score cards
+    html.push_str("<div class=\"score-cards\">\n");
+
+    // ACS card
+    if let Some(ref acs) = score.acs {
+        let acs_class = if acs.score >= 75.0 { "high" } else if acs.score >= 50.0 { "medium" } else { "low" };
+        html.push_str(&format!(
+            "<div class=\"score-card {acs_class}\">\n\
+             <div class=\"score-label\">Authorship Confidence</div>\n\
+             <div class=\"score-value\">{:.0}</div>\n\
+             <div class=\"score-range\">{:.0}&ndash;{:.0} (&plusmn;{:.0})</div>\n\
+             </div>\n",
+            acs.score, acs.score_low, acs.score_high, acs.margin
+        ));
+    }
+
+    // PII card
+    if let Some(ref pii_val) = score.pii {
+        let pii_class = if pii_val.score > 70.0 { "high" } else if pii_val.score > 40.0 { "medium" } else { "low" };
+        html.push_str(&format!(
+            "<div class=\"score-card {pii_class}\">\n\
+             <div class=\"score-label\">Process Integrity</div>\n\
+             <div class=\"score-value\">{:.0}</div>\n\
+             <div class=\"score-range\">{}</div>\n\
+             </div>\n",
+            pii_val.score,
+            escape(pii_val.level.label())
+        ));
+    }
+
+    // Register card
+    if let Some(ref reg) = score.register {
+        html.push_str(&format!(
+            "<div class=\"score-card\">\n\
+             <div class=\"score-label\">Detected Register</div>\n\
+             <div class=\"score-register\">{}</div>\n\
+             <div class=\"score-range\">{:.0}% confidence</div>\n\
+             </div>\n",
+            escape(&reg.label),
+            reg.confidence * 100.0
+        ));
+    }
+
+    html.push_str("</div>\n"); // close score-cards
+
+    // ACS interpretation
+    if let Some(ref eval) = score.evaluator_report {
+        html.push_str(&format!("<p>{}</p>\n",
+            escape(&eval.authorship_assessment.interpretation)));
+        if !eval.authorship_assessment.caveats.is_empty() {
+            html.push_str("<ul class=\"caveats\">\n");
+            for caveat in &eval.authorship_assessment.caveats {
+                html.push_str(&format!("<li>{}</li>\n", escape(caveat)));
+            }
+            html.push_str("</ul>\n");
+        }
+    }
+
+    html.push_str("</section>\n");
+}
+
+fn render_baselines_section(
+    html: &mut String,
+    baselines: &crate::analysis::baselines::RegisterBaselineReport,
+) {
+    html.push_str("<section>\n<h2>Register Baseline Comparison</h2>\n");
+    html.push_str(&format!("<p>Compared against <strong>{}</strong> baselines</p>\n",
+        escape(&baselines.register_label)));
+    html.push_str("<table>\n<tr><th>Metric</th><th>Value</th><th>Expected</th><th>Z-score</th><th>Assessment</th></tr>\n");
+    for comp in &baselines.comparisons {
+        let class = match comp.assessment {
+            crate::analysis::baselines::MetricAssessment::Expected => "",
+            crate::analysis::baselines::MetricAssessment::Atypical => "caution",
+            crate::analysis::baselines::MetricAssessment::Anomalous => "warning",
+        };
+        html.push_str(&format!(
+            "<tr class=\"{class}\"><td>{}</td><td>{:.3}</td><td>{:.3} &plusmn; {:.3}</td><td>{:.1}</td><td>{}</td></tr>\n",
+            escape(&comp.metric_name),
+            comp.actual_value,
+            comp.expected_mean,
+            comp.expected_stddev,
+            comp.z_score,
+            comp.assessment.label()
+        ));
+    }
+    html.push_str("</table>\n</section>\n");
+}
+
+fn render_anomalies_section(
+    html: &mut String,
+    anomalies: &crate::scoring::anomalies::AnomalyReport,
+    eval: Option<&crate::scoring::content_design::EvaluatorReport>,
+) {
+    html.push_str("<section>\n<h2>Anomaly Flags</h2>\n");
+    html.push_str(&format!("<p>{}</p>\n", escape(&anomalies.summary)));
+    html.push_str("<table>\n<tr><th>Severity</th><th>Type</th><th>Location</th><th>Description</th></tr>\n");
+    for flag in &anomalies.flags {
+        let class = match flag.severity {
+            crate::scoring::anomalies::AnomalySeverity::High => "warning",
+            crate::scoring::anomalies::AnomalySeverity::Medium => "caution",
+            crate::scoring::anomalies::AnomalySeverity::Low => "",
+        };
+        let loc = match &flag.location {
+            crate::scoring::anomalies::AnomalyLocation::DocumentLevel => "Document".to_string(),
+            crate::scoring::anomalies::AnomalyLocation::ParagraphRange { start, end } => format!("&para;{start}&ndash;{end}"),
+            crate::scoring::anomalies::AnomalyLocation::Section(s) => escape(s),
+        };
+        html.push_str(&format!(
+            "<tr class=\"{class}\"><td>{}</td><td>{}</td><td>{loc}</td><td>{}</td></tr>\n",
+            flag.severity.label(),
+            flag.anomaly_type.label(),
+            escape(&flag.description),
+        ));
+    }
+    html.push_str("</table>\n");
+
+    if let Some(eval) = eval {
+        html.push_str(&format!(
+            "<p class=\"framing-note\">{}</p>\n",
+            escape(&eval.anomaly_narrative.framing_note)
+        ));
+    }
+
+    html.push_str("</section>\n");
+}
+
+fn render_explainability_section(
+    html: &mut String,
+    explained: &crate::identity::explainability::ExplainedDecision,
+) {
+    html.push_str("<section>\n<h2>Feature Importance &amp; Explanation</h2>\n");
+    html.push_str(&format!("<p class=\"narrative\">{}</p>\n", escape(&explained.narrative)));
+
+    // Supporting features
+    if !explained.supporting_features.is_empty() {
+        html.push_str("<h3>Supporting Evidence</h3>\n<table>\n");
+        html.push_str("<tr><th>Feature</th><th>Document</th><th>Profile</th><th>Distance</th><th>Interpretation</th></tr>\n");
+        for feat in &explained.supporting_features {
+            html.push_str(&format!(
+                "<tr><td>{}</td><td>{:.4}</td><td>{:.4}</td><td>{:.4}</td><td>{}</td></tr>\n",
+                escape(&feat.display_name), feat.query_value, feat.profile_value, feat.distance,
+                escape(&feat.interpretation)
+            ));
+        }
+        html.push_str("</table>\n");
+    }
+
+    // Diverging features
+    if !explained.diverging_features.is_empty() {
+        html.push_str("<h3>Diverging Evidence</h3>\n<table>\n");
+        html.push_str("<tr><th>Feature</th><th>Document</th><th>Profile</th><th>Distance</th><th>Interpretation</th></tr>\n");
+        for feat in &explained.diverging_features {
+            html.push_str(&format!(
+                "<tr class=\"caution\"><td>{}</td><td>{:.4}</td><td>{:.4}</td><td>{:.4}</td><td>{}</td></tr>\n",
+                escape(&feat.display_name), feat.query_value, feat.profile_value, feat.distance,
+                escape(&feat.interpretation)
+            ));
+        }
+        html.push_str("</table>\n");
+    }
+
+    // Agreement ratio bar
+    let pct = (explained.agreement_ratio * 100.0) as u32;
+    let bar_class = if pct >= 70 { "high" } else if pct >= 40 { "medium" } else { "low" };
+    html.push_str(&format!(
+        "<div class=\"agreement\"><span>Feature Agreement: {pct}%</span>\
+         <div class=\"agreement-bar\"><div class=\"agreement-fill {bar_class}\" style=\"width:{pct}%\"></div></div></div>\n"
+    ));
+
+    // Feature ranking table (top 10)
+    html.push_str("<h3>Feature Ranking</h3>\n<table>\n");
+    html.push_str("<tr><th>#</th><th>Feature</th><th>Direction</th><th>Distance</th></tr>\n");
+    for feat in explained.ranked_features.iter().take(10) {
+        let dir = match feat.direction {
+            crate::identity::explainability::FeatureDirection::Above => "&uarr; Above",
+            crate::identity::explainability::FeatureDirection::Below => "&darr; Below",
+            crate::identity::explainability::FeatureDirection::Match => "&equals; Match",
+        };
+        html.push_str(&format!(
+            "<tr><td>{}</td><td>{}</td><td>{dir}</td><td>{:.4}</td></tr>\n",
+            feat.rank, escape(&feat.feature_name), feat.distance
+        ));
+    }
+    html.push_str("</table>\n</section>\n");
+}
+
+fn render_recommendations_section(
+    html: &mut String,
+    eval: &crate::scoring::content_design::EvaluatorReport,
+) {
+    html.push_str("<section>\n<h2>Recommended Actions</h2>\n<ol>\n");
+    for action in &eval.recommended_actions {
+        html.push_str(&format!("<li>{}</li>\n", escape(action)));
+    }
+    html.push_str("</ol>\n</section>\n");
+}
+
 fn render_audit_section(html: &mut String, score: &UnifiedScore) {
     html.push_str("<section class=\"audit\">\n<h2>Audit Trail</h2>\n<table>\n");
     row(html, "Software", &format!("Provenance v{}", score.audit.software_version));
@@ -299,6 +547,35 @@ code { background: #f0f0f0; padding: 0.15rem 0.3rem; border-radius: 3px; font-si
 .confidence.low { background: #ffebee; border: 1px solid #f44336; }
 .warning td { background: #fff3e0; color: #e65100; }
 .caution td { background: #fffde7; }
+.disclosure { background: #e3f2fd; border: 1px solid #90caf9; }
+.disclosure h2 { border-left-color: #1565c0; }
+.disclosure ul { margin: 0.5rem 0 0.5rem 1.5rem; }
+.disclosure li { margin-bottom: 0.3rem; font-size: 0.9rem; }
+.evidence-basis { font-style: italic; font-size: 0.85rem; color: #555; margin-top: 0.5rem; }
+.exec-summary { font-size: 1.05rem; line-height: 1.5; margin-bottom: 1rem; }
+.score-cards { display: flex; gap: 1rem; margin: 1rem 0; flex-wrap: wrap; }
+.score-card { flex: 1; min-width: 180px; padding: 1rem; border-radius: 6px;
+              text-align: center; border: 1px solid #ddd; background: #fafafa; }
+.score-card.high { background: #e8f5e9; border-color: #4caf50; }
+.score-card.medium { background: #fff3e0; border-color: #ff9800; }
+.score-card.low { background: #ffebee; border-color: #f44336; }
+.score-label { font-size: 0.8rem; text-transform: uppercase; color: #666; margin-bottom: 0.3rem; }
+.score-value { font-size: 2rem; font-weight: 700; }
+.score-register { font-size: 1.1rem; font-weight: 600; }
+.score-range { font-size: 0.8rem; color: #888; }
+.caveats { margin: 0.5rem 0 0 1.5rem; font-size: 0.9rem; color: #666; }
+.caveats li { margin-bottom: 0.2rem; }
+.framing-note { font-style: italic; font-size: 0.85rem; color: #666; margin-top: 0.75rem;
+                padding: 0.5rem; background: #f5f5f5; border-radius: 4px; }
+.narrative { font-size: 1rem; line-height: 1.6; margin-bottom: 1rem; }
+h3 { font-size: 0.95rem; margin: 1rem 0 0.3rem; color: #555; }
+.agreement { margin: 1rem 0; }
+.agreement span { font-weight: 600; font-size: 0.9rem; }
+.agreement-bar { height: 12px; background: #eee; border-radius: 6px; margin-top: 0.3rem; overflow: hidden; }
+.agreement-fill { height: 100%; border-radius: 6px; }
+.agreement-fill.high { background: #4caf50; }
+.agreement-fill.medium { background: #ff9800; }
+.agreement-fill.low { background: #f44336; }
 .audit { opacity: 0.8; font-size: 0.85rem; }
 footer { text-align: center; color: #999; font-size: 0.8rem; margin-top: 2rem;
          border-top: 1px solid #ddd; padding-top: 1rem; }
