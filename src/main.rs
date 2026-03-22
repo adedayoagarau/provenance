@@ -59,6 +59,21 @@ enum Commands {
         #[arg(long, default_value = "text")]
         format: String,
     },
+
+    /// Rank multiple author candidates against a document
+    Rank {
+        /// Path to the document to analyze
+        #[arg(short, long)]
+        file: String,
+
+        /// Paths to author profile files (at least one required)
+        #[arg(short, long, num_args = 1..)]
+        profiles: Vec<String>,
+
+        /// Output format: text, json, html
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -89,6 +104,12 @@ fn main() -> anyhow::Result<()> {
             info!(file = %file, "Running DOCX forensic analysis");
             let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
             let report = provenance::run_docx_forensics(&file, output_format)?;
+            println!("{report}");
+        }
+        Commands::Rank { file, profiles, format } => {
+            info!(file = %file, candidates = profiles.len(), "Ranking author candidates");
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let report = provenance::rank_candidates_with_format(&file, &profiles, output_format)?;
             println!("{report}");
         }
     }

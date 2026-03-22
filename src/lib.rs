@@ -116,6 +116,122 @@ fn build_docx_profile(
     ))
 }
 
+/// Rank multiple author candidates against a document.
+pub fn rank_candidates_with_format(
+    file_path: &str,
+    profile_paths: &[String],
+    format: OutputFormat,
+) -> Result<String> {
+    let path = std::path::Path::new(file_path);
+    if !path.exists() {
+        return Err(ProvenanceError::FileNotFound {
+            path: file_path.to_string(),
+        });
+    }
+
+    if profile_paths.is_empty() {
+        return Err(ProvenanceError::ProfileError {
+            reason: "At least one profile is required for ranking".to_string(),
+        });
+    }
+
+    // Extract text and analyze
+    let text = extraction::extract_text(file_path)?;
+    let analysis_result = analysis::analyze_text(&text)?;
+
+    // Load all candidate profiles
+    let candidates: Vec<identity::profile::AuthorProfile> = profile_paths
+        .iter()
+        .map(|p| identity::profile::load(p))
+        .collect::<Result<Vec<_>>>()?;
+
+    // Rank candidates
+    let ranking = identity::ranking::rank_candidates(&analysis_result, &candidates);
+
+    // Render output
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&ranking)?),
+        OutputFormat::Html => Ok(render_ranking_html(&ranking)),
+        OutputFormat::Text => Ok(render_ranking_text(&ranking)),
+    }
+}
+
+fn render_ranking_text(ranking: &identity::ranking::RankingResult) -> String {
+    let mut out = String::new();
+
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  AUTHORSHIP RANKING — Candidate Comparison\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+
+    out.push_str(&format!("  {}\n\n", ranking.summary));
+
+    out.push_str(&format!(
+        "  Top margin:    {:.1} pp\n",
+        ranking.top_margin * 100.0
+    ));
+    out.push_str(&format!(
+        "  Definitive:    {}\n\n",
+        if ranking.is_definitive { "Yes" } else { "No — additional evidence recommended" }
+    ));
+
+    out.push_str("── Rankings ──\n\n");
+
+    for candidate in &ranking.rankings {
+        out.push_str(&format!(
+            "  #{} {} — {:.1}% confidence (relative: {:.2})\n",
+            candidate.rank,
+            candidate.author_name,
+            candidate.comparison.confidence.value * 100.0,
+            candidate.relative_score,
+        ));
+        out.push_str(&format!("     {}\n\n", candidate.explanation.narrative));
+    }
+
+    out
+}
+
+fn render_ranking_html(ranking: &identity::ranking::RankingResult) -> String {
+    let mut html = String::new();
+    html.push_str("<!DOCTYPE html><html><head><meta charset='utf-8'>\n");
+    html.push_str("<title>Provenance — Authorship Ranking</title>\n");
+    html.push_str("<style>\n");
+    html.push_str("body{font-family:system-ui;max-width:900px;margin:2rem auto;padding:0 1rem;}\n");
+    html.push_str("h1{color:#1a1a2e;} h2{color:#16213e;margin-top:1.5rem;}\n");
+    html.push_str("table{border-collapse:collapse;width:100%;margin:1rem 0;}\n");
+    html.push_str("th,td{border:1px solid #ddd;padding:8px;text-align:left;}\n");
+    html.push_str("th{background:#f5f5f5;}\n");
+    html.push_str(".rank-1{background:#e8f5e9;} .rank-2{background:#fff3e0;} .rank-3{background:#fce4ec;}\n");
+    html.push_str(".summary{background:#f8f9fa;border-left:4px solid #1a1a2e;padding:1rem;margin:1rem 0;}\n");
+    html.push_str("</style></head><body>\n");
+    html.push_str("<h1>Authorship Ranking</h1>\n");
+    html.push_str(&format!("<div class='summary'><p>{}</p>\n", ranking.summary));
+    html.push_str(&format!(
+        "<p>Top margin: <strong>{:.1} pp</strong> | Definitive: <strong>{}</strong></p></div>\n",
+        ranking.top_margin * 100.0,
+        if ranking.is_definitive { "Yes" } else { "No" }
+    ));
+
+    html.push_str("<h2>Candidate Rankings</h2>\n<table>\n");
+    html.push_str("<tr><th>Rank</th><th>Author</th><th>Confidence</th><th>Relative Score</th><th>Assessment</th></tr>\n");
+    for c in &ranking.rankings {
+        let class = match c.rank {
+            1 => "rank-1",
+            2 => "rank-2",
+            3 => "rank-3",
+            _ => "",
+        };
+        html.push_str(&format!(
+            "<tr class='{class}'><td>#{}</td><td>{}</td><td>{:.1}%</td><td>{:.2}</td><td>{}</td></tr>\n",
+            c.rank, c.author_name,
+            c.comparison.confidence.value * 100.0,
+            c.relative_score,
+            c.explanation.narrative,
+        ));
+    }
+    html.push_str("</table>\n</body></html>");
+    html
+}
+
 /// Build an author profile from verified writing samples.
 pub fn build_profile(samples_dir: &str, name: &str) -> Result<String> {
     use rayon::prelude::*;
