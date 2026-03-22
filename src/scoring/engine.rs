@@ -1,9 +1,11 @@
+use serde::{Deserialize, Serialize};
+
 use crate::analysis::AnalysisResult;
 use crate::forensics::ForensicReport;
 use crate::identity::comparison::ComparisonResult;
 
 /// Unified score combining all analysis layers.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UnifiedScore {
     pub forensic_report: ForensicReport,
     pub analysis_result: AnalysisResult,

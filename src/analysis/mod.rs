@@ -3,8 +3,10 @@ pub mod syntactic;
 pub mod semantic;
 pub mod stylometric;
 
+use serde::{Deserialize, Serialize};
+
 /// Complete text analysis result combining all analysis layers.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalysisResult {
     pub lexical: lexical::LexicalProfile,
     pub syntactic: syntactic::SyntacticProfile,

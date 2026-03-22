@@ -1,8 +1,9 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 
 /// Lexical analysis profile for a text.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LexicalProfile {
     pub total_words: usize,
     pub unique_words: usize,

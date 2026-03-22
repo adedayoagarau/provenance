@@ -1,7 +1,8 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Stylometric analysis profile for a text.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StylometricProfile {
     pub punctuation_frequency: HashMap<char, usize>,
     pub avg_paragraph_length: f64,

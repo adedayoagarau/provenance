@@ -1,14 +1,15 @@
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 /// Detected file format information.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FormatInfo {
     pub extension: String,
     pub detected_type: FileType,
     pub encoding: String,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum FileType {
     PlainText,
     Markdown,

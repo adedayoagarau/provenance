@@ -1,12 +1,6 @@
 use clap::Parser;
+use provenance::utils;
 use tracing::info;
-
-mod forensics;
-mod analysis;
-mod identity;
-mod scoring;
-mod crypto;
-mod utils;
 
 #[derive(Parser, Debug)]
 #[command(name = "provenance", version, about = "Forensic authorship verification platform")]

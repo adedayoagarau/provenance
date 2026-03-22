@@ -1,7 +1,8 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Semantic analysis profile for a text.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SemanticProfile {
     pub paragraph_count: usize,
     pub topic_keywords: Vec<(String, usize)>,

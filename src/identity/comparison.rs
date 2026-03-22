@@ -1,16 +1,18 @@
+use serde::{Deserialize, Serialize};
+
 use crate::analysis::AnalysisResult;
 use super::confidence::ConfidenceScore;
 use super::profile::AuthorProfile;
 
 /// Result of comparing a document's analysis against an author profile.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ComparisonResult {
     pub author_name: String,
     pub confidence: ConfidenceScore,
     pub feature_distances: Vec<FeatureDistance>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FeatureDistance {
     pub feature_name: String,
     pub expected: f64,

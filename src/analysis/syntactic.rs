@@ -1,5 +1,7 @@
+use serde::{Deserialize, Serialize};
+
 /// Syntactic analysis profile for a text.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SyntacticProfile {
     pub total_sentences: usize,
     pub avg_sentence_length: f64,

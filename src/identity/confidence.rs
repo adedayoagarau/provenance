@@ -1,12 +1,14 @@
+use serde::{Deserialize, Serialize};
+
 /// Confidence score with contextual factors.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConfidenceScore {
     pub value: f64,
     pub level: ConfidenceLevel,
     pub word_count_factor: f64,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ConfidenceLevel {
     High,
     Medium,

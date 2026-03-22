@@ -4,10 +4,11 @@ pub mod format;
 pub mod timeline;
 
 use crate::utils::errors::{self, Result};
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 /// Forensic examination report for a file.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ForensicReport {
     pub metadata: metadata::FileMetadata,
     pub integrity: integrity::IntegrityResult,
