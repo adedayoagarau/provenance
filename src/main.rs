@@ -48,6 +48,17 @@ enum Commands {
         #[arg(long, default_value = "text")]
         format: String,
     },
+
+    /// Deep forensic analysis of a .docx file (RSID, formatting, structure, construction profile)
+    DocxForensics {
+        /// Path to the .docx file to examine
+        #[arg(short, long)]
+        file: String,
+
+        /// Output format: text, json
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -72,6 +83,12 @@ fn main() -> anyhow::Result<()> {
             info!(file = %file, "Running file forensics");
             let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
             let report = provenance::run_forensics_with_format(&file, output_format)?;
+            println!("{report}");
+        }
+        Commands::DocxForensics { file, format } => {
+            info!(file = %file, "Running DOCX forensic analysis");
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let report = provenance::run_docx_forensics(&file, output_format)?;
             println!("{report}");
         }
     }
