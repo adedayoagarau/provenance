@@ -1,0 +1,5 @@
+/target
+profiles/
+*.swp
+*.swo
+.env
