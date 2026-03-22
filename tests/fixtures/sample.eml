@@ -1,0 +1,15 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: Sample Email for Testing
+Date: Sat, 22 Mar 2026 12:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+
+This is the body of a sample email message for testing the email
+extraction pipeline in Provenance.
+
+The email contains multiple paragraphs to verify that paragraph
+boundaries are preserved correctly.
+
+Best regards,
+The Sender

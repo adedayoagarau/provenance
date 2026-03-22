@@ -1,0 +1,36 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\title{Sample LaTeX Document}
+\author{Test Author}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+This is the introduction paragraph of the LaTeX document. It contains
+some regular text that should be extracted cleanly from the markup.
+
+\subsection{Background}
+
+The background section has \textbf{bold text} and \emph{emphasized text}
+that should appear as plain text after stripping.
+
+Here is a mathematical equation that should be excluded:
+\begin{equation}
+E = mc^2
+\end{equation}
+
+And here is inline math $x^2 + y^2 = z^2$ which should also be excluded.
+
+\section{Methodology}
+
+The methodology section describes the approach. We use a \textit{novel}
+approach to analyze text~documents.
+
+% This is a comment that should be excluded
+The final sentence of the document.\footnote{This is a footnote that should be included.}
+
+\end{document}

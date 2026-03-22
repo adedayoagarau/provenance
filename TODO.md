@@ -44,39 +44,45 @@
 
 ---
 
-## Phase 1: Text Extraction Pipeline
+## Phase 1: Text Extraction Pipeline ✓
 
-### 1.1 Plain text improvements
-- [ ] Unicode normalization (NFC) — add `unicode-normalization` crate
-- [ ] Encoding detection — add `encoding_rs` crate
-- [ ] Whitespace normalization
-- [ ] Language detection — add `whatlang` crate
+> 13 format extractors, magic byte detection, NFC normalization, encoding detection.
 
-### 1.2 Markdown extraction
-- [ ] Strip markdown syntax, preserve text content
-- [ ] Use `pulldown-cmark` crate for parsing
-- [ ] **File**: `src/extraction/markdown.rs`
+### 1.1 Core Formats (Tier 1) ✓
+- [x] **Plain text** — encoding detection (UTF-8, UTF-16 LE/BE, Windows-1252, BOM)
+- [x] **Markdown** — pulldown-cmark parser, excludes code blocks
+- [x] **HTML** — scraper-based, excludes script/style/noscript
+- [x] **PDF** — lopdf text extraction, encryption detection
+- [x] **DOCX** — ZIP + XML parser (w:t elements)
 
-### 1.3 DOCX extraction
-- [ ] Extract paragraph text via `docx-rs` crate
-- [ ] Handle styles as metadata
-- [ ] Extract comments and track changes separately
-- [ ] **File**: `src/extraction/docx.rs`
+### 1.2 Extended Formats (Tier 2) ✓
+- [x] **RTF** — Custom parser handling control words, unicode escapes, Windows-1252
+- [x] **ODT** — ZIP + content.xml parser (text:p/text:h elements)
+- [x] **EPUB** — ZIP + OPF manifest + spine-ordered XHTML extraction
+- [x] **EML** — mailparse for MIME multipart, prefers text/plain, falls back to HTML stripping
+- [x] **MBOX** — Multi-message mailbox parsing with per-message extraction
+- [x] **LaTeX** — Custom stripper: removes commands, math, comments, keeps prose
+- [x] **JSON chat exports** — Auto-detects Discord/Slack/Telegram/Twitter structures
+- [x] **CSV chat exports** — Column auto-detection for message content
 
-### 1.4 PDF extraction
-- [ ] Basic text stream extraction via `lopdf` crate
-- [ ] Handle multi-page documents
-- [ ] **File**: `src/extraction/pdf.rs`
+### 1.3 Extraction Infrastructure ✓
+- [x] Format auto-detection via magic bytes (PDF, ZIP/DOCX/ODT/EPUB, RTF, EML, MBOX, LaTeX)
+- [x] Extension fallback for detection
+- [x] ZIP-based format disambiguation (DOCX vs ODT vs EPUB)
+- [x] NFC unicode normalization on all extracted text
+- [x] Line ending normalization (\r\n → \n)
+- [x] Whitespace collapse (max 2 consecutive newlines)
+- [x] 14 tests covering all formats + edge cases
 
-### 1.5 HTML extraction
-- [ ] Strip tags, decode entities via `scraper` crate
-- [ ] **File**: `src/extraction/html.rs`
-
-### 1.6 Extraction module
-- [ ] Create `src/extraction/mod.rs` — unified dispatcher
-- [ ] Auto-detect format and dispatch to correct extractor
-- [ ] Move `extract_text()` and `collect_samples()` from forensics
-- [ ] Tests: one test per format with fixture files
+### 1.4 Future Format Extensions (Not Yet Implemented)
+- [ ] **DOC** (legacy binary format) — no mature Rust crate, consider external tool
+- [ ] **Scrivener** (.scriv/.scrivx) — XML manifest + RTF content files
+- [ ] **Apple Pages** — ZIP + protobuf (complex, low priority)
+- [ ] **reStructuredText** — rust-rst crate when mature
+- [ ] **AsciiDoc** — asciidocr crate
+- [ ] **ENEX** (Evernote) — XML-based, parse with serde
+- [ ] **MSG** (Outlook) — msg_parser crate
+- [ ] Language detection — `whatlang` crate (auto-detect input language)
 
 ---
 
@@ -363,11 +369,10 @@
 | Phase | Add | Remove |
 |-------|-----|--------|
 | 0 | `toml` | `tokio`, `zip`, `xml-rs` |
-| 1 | `unicode-normalization`, `encoding_rs`, `whatlang`, `pulldown-cmark`, `docx-rs`, `lopdf`, `scraper` | |
+| 1 | `pulldown-cmark`, `lopdf`, `scraper`, `zip`, `rtf-parser`, `mailparse`, `csv`, `regex`, `encoding_rs`, `unicode-normalization` | |
 | 3 | `ndarray` | |
 | 4 | `linfa` + sub-crates, `ort` | |
-| 9 | `proptest` (dev) | |
-| 10 | `rayon`, `memmap2` | |
+| Future | `whatlang`, `msg_parser`, `proptest`, `rayon`, `memmap2` | |
 
 ---
 
