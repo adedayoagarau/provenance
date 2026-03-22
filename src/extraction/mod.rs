@@ -27,6 +27,10 @@ pub fn extract_text(file_path: &str) -> Result<String> {
         });
     }
 
+    // Security: validate file before processing
+    let validation_config = crate::utils::validation::ValidationConfig::default();
+    crate::utils::validation::validate_file(path, &validation_config)?;
+
     let file_type = detect_type(path);
 
     let raw_text = match file_type {

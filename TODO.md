@@ -326,20 +326,28 @@
 
 ---
 
-## Phase 9: Security Hardening
+## Phase 9: Security Hardening ✓
 
-### 9.1 Input validation
-- [ ] File size limits (configurable, default 100MB)
-- [ ] Zip bomb detection
-- [ ] XML bomb detection
-- [ ] Path traversal prevention
+### 9.1 Input validation ✓
+- [x] File size limits (configurable, default 100MB)
+- [x] Zip bomb detection (compression ratio + decompressed size limits)
+- [x] XML bomb detection (entity count, recursive entity patterns)
+- [x] Path traversal prevention (archive entries, null bytes, drive letters)
+- [x] Filename sanitization
+- [x] Wired into extraction pipeline
+- [x] **File**: `src/utils/validation.rs`
 
-### 9.2 Fuzz testing
-- [ ] `cargo-fuzz` targets for file parsing, text extraction, feature extraction, profile deser
-- [ ] **Directory**: `fuzz/`
+### 9.2 Fuzz testing ✓
+- [x] `cargo-fuzz` targets: text extraction, analysis, validation, profile deserialization
+- [x] **Directory**: `fuzz/fuzz_targets/`
 
-### 9.3 Property-based testing
-- [ ] `proptest` crate for determinism, normalization, serialization roundtrips
+### 9.3 Property-based testing ✓
+- [x] `proptest` crate for determinism, serialization roundtrips
+- [x] Analysis determinism (same input → same output)
+- [x] Feature vector JSON roundtrip
+- [x] Validation never panics on arbitrary input
+- [x] Distance metric properties (self-similarity, symmetry)
+- [x] **File**: `tests/test_proptest.rs`
 
 ---
 

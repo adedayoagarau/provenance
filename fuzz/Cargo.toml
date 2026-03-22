@@ -1,0 +1,34 @@
+[package]
+name = "provenance-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+provenance = { path = ".." }
+
+[[bin]]
+name = "fuzz_text_extraction"
+path = "fuzz_targets/text_extraction.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_analysis"
+path = "fuzz_targets/analysis.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_validation"
+path = "fuzz_targets/validation.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_profile_deser"
+path = "fuzz_targets/profile_deser.rs"
+doc = false
+
+[workspace]
