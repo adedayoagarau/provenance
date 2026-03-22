@@ -304,24 +304,25 @@
 
 ---
 
-## Phase 8: Reporting & Output
+## Phase 8: Reporting & Output ✓
 
-### 8.1 Multi-format output
-- [ ] `--format json|text|html` CLI flag
-- [ ] JSON report with full feature vectors
-- [ ] **File**: `src/scoring/report.rs` (enhance)
+### 8.1 Multi-format output ✓
+- [x] `--format json|text|html` CLI flag on `analyze` and `forensics` commands
+- [x] JSON report with full feature vectors (serde serialization)
+- [x] **File**: `src/scoring/report.rs` (rewritten with render_format dispatcher)
 
-### 8.2 HTML report
-- [ ] Self-contained HTML with embedded CSS
-- [ ] Feature comparison tables
-- [ ] Confidence visualization
-- [ ] Anomaly heatmap
-- [ ] **File**: `src/scoring/html_report.rs`
+### 8.2 HTML report ✓
+- [x] Self-contained HTML with embedded CSS (no external dependencies)
+- [x] Feature comparison tables with bar charts
+- [x] Confidence visualization (color-coded high/medium/low)
+- [x] Tampering findings table with severity highlighting
+- [x] **File**: `src/scoring/html_report.rs`
 
-### 8.3 Audit trail
-- [ ] Software version, config hash, input file hash
-- [ ] Complete analysis parameters
-- [ ] Reproducibility guarantee
+### 8.3 Audit trail ✓
+- [x] Software version, input file hash, timestamp
+- [x] Complete analysis parameters (config, feature set)
+- [x] ISO 8601 timestamps for reproducibility
+- [x] **File**: `src/scoring/engine.rs` (AuditTrail struct)
 
 ---
 

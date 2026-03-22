@@ -1,4 +1,5 @@
 use clap::Parser;
+use provenance::scoring::engine::OutputFormat;
 use provenance::utils;
 use tracing::info;
 
@@ -20,6 +21,10 @@ enum Commands {
         /// Path to an author profile to compare against
         #[arg(short, long)]
         profile: Option<String>,
+
+        /// Output format: text, json, html
+        #[arg(long, default_value = "text")]
+        format: String,
     },
 
     /// Build an author profile from verified writing samples
@@ -38,6 +43,10 @@ enum Commands {
         /// Path to the file to examine
         #[arg(short, long)]
         file: String,
+
+        /// Output format: text, json, html
+        #[arg(long, default_value = "text")]
+        format: String,
     },
 }
 
@@ -48,9 +57,10 @@ fn main() -> anyhow::Result<()> {
     info!("Provenance v{}", env!("CARGO_PKG_VERSION"));
 
     match cli.command {
-        Commands::Analyze { file, profile } => {
+        Commands::Analyze { file, profile, format } => {
             info!(file = %file, "Starting document analysis");
-            let report = provenance::analyze(&file, profile.as_deref())?;
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let report = provenance::analyze_with_format(&file, profile.as_deref(), output_format)?;
             println!("{report}");
         }
         Commands::Profile { samples, name } => {
@@ -58,9 +68,10 @@ fn main() -> anyhow::Result<()> {
             let profile = provenance::build_profile(&samples, &name)?;
             println!("Profile created: {profile}");
         }
-        Commands::Forensics { file } => {
+        Commands::Forensics { file, format } => {
             info!(file = %file, "Running file forensics");
-            let report = provenance::run_forensics(&file)?;
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let report = provenance::run_forensics_with_format(&file, output_format)?;
             println!("{report}");
         }
     }
