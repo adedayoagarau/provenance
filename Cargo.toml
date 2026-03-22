@@ -20,6 +20,14 @@ sha2 = "0.10"
 rust-stemmers = "1.2"
 unicode-segmentation = "1.10"
 
+# Text Extraction
+pulldown-cmark = "0.10"
+lopdf = "0.32"
+scraper = "0.18"
+encoding_rs = "0.8"
+unicode-normalization = "0.1"
+zip = "0.6"
+
 # Error Handling
 thiserror = "1"
 anyhow = "1"

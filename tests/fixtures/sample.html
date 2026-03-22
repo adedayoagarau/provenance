@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sample HTML Document</title>
+    <style>body { font-family: sans-serif; }</style>
+    <script>console.log("This should not appear in extracted text");</script>
+</head>
+<body>
+    <h1>Sample Document</h1>
+    <p>This is the first paragraph of the HTML document. It contains
+    some regular text that should be extracted.</p>
+    <p>The second paragraph has <strong>bold</strong> and <em>italic</em>
+    text that should appear as plain text.</p>
+    <div>
+        <p>A nested paragraph inside a div element.</p>
+    </div>
+    <script>var x = "This script content should be excluded";</script>
+    <noscript>This noscript content should also be excluded.</noscript>
+    <p>Final paragraph of the document.</p>
+</body>
+</html>

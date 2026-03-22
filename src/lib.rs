@@ -4,6 +4,7 @@
 //! by analyzing deeply embedded stylistic, structural, and behavioral patterns.
 
 pub mod forensics;
+pub mod extraction;
 pub mod analysis;
 pub mod identity;
 pub mod scoring;
@@ -24,8 +25,8 @@ pub fn analyze(file_path: &str, profile_path: Option<&str>) -> Result<String> {
     // Layer 1: File forensics
     let forensic_report = forensics::examine(file_path)?;
 
-    // Layer 2: Text analysis
-    let text = forensics::extract_text(file_path)?;
+    // Layer 2: Text extraction (format-aware) + analysis
+    let text = extraction::extract_text(file_path)?;
     let analysis_result = analysis::analyze_text(&text)?;
 
     // Layer 3: Identity comparison (if profile provided)
@@ -43,7 +44,7 @@ pub fn analyze(file_path: &str, profile_path: Option<&str>) -> Result<String> {
 
 /// Build an author profile from verified writing samples.
 pub fn build_profile(samples_dir: &str, name: &str) -> Result<String> {
-    let samples = forensics::collect_samples(samples_dir)?;
+    let samples = extraction::collect_samples(samples_dir)?;
     if samples.is_empty() {
         return Err(ProvenanceError::ProfileError {
             reason: format!("No sample files found in '{samples_dir}'"),
@@ -52,7 +53,7 @@ pub fn build_profile(samples_dir: &str, name: &str) -> Result<String> {
 
     let mut analyses = Vec::new();
     for sample in &samples {
-        let text = forensics::extract_text(sample)?;
+        let text = extraction::extract_text(sample)?;
         let result = analysis::analyze_text(&text)?;
         analyses.push(result);
     }

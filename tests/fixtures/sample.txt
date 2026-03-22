@@ -1,0 +1,8 @@
+The quick brown fox jumps over the lazy dog. This is a sample text file
+for testing the plain text extraction pipeline in Provenance.
+
+Each paragraph should be preserved correctly. Whitespace should be normalized
+and the text should be ready for stylometric analysis.
+
+This is the third paragraph, which helps test paragraph counting in the
+semantic analysis module.
