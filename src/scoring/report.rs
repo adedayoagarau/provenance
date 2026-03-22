@@ -1,6 +1,18 @@
-use super::engine::UnifiedScore;
+use super::engine::{OutputFormat, UnifiedScore};
 
-/// Render a unified score into a human-readable report.
+/// Render a unified score in the requested format.
+pub fn render_format(
+    score: &UnifiedScore,
+    format: OutputFormat,
+) -> crate::utils::errors::Result<String> {
+    match format {
+        OutputFormat::Text => render(score),
+        OutputFormat::Json => render_json(score),
+        OutputFormat::Html => super::html_report::render(score),
+    }
+}
+
+/// Render a unified score into a human-readable text report.
 pub fn render(score: &UnifiedScore) -> crate::utils::errors::Result<String> {
     let mut r = String::new();
 
@@ -13,7 +25,43 @@ pub fn render(score: &UnifiedScore) -> crate::utils::errors::Result<String> {
     r.push_str(&format!("  File:     {}\n", score.forensic_report.metadata.file_name));
     r.push_str(&format!("  Size:     {} bytes\n", score.forensic_report.metadata.file_size));
     r.push_str(&format!("  SHA-256:  {}\n", score.forensic_report.integrity.sha256));
-    r.push_str(&format!("  Format:   {:?}\n\n", score.forensic_report.format.detected_type));
+    r.push_str(&format!("  Format:   {}\n", score.forensic_report.format.detected_type));
+    r.push_str(&format!("  Encoding: {}\n", score.forensic_report.format.encoding));
+    if let Some(ref warning) = score.forensic_report.format.mismatch_warning {
+        r.push_str(&format!("  WARNING:  {warning}\n"));
+    }
+
+    // Tampering
+    if score.forensic_report.tampering.risk_score > 0.0 {
+        r.push_str(&format!(
+            "  Tampering Risk: {:.0}%\n",
+            score.forensic_report.tampering.risk_score * 100.0
+        ));
+        for finding in &score.forensic_report.tampering.findings {
+            r.push_str(&format!("    [{:?}] {}\n", finding.severity, finding.description));
+        }
+    }
+
+    // Document metadata
+    if let Some(ref doc_meta) = score.forensic_report.metadata.document_metadata {
+        r.push_str("\n── Document Metadata ──\n");
+        if let Some(ref title) = doc_meta.title {
+            r.push_str(&format!("  Title:    {title}\n"));
+        }
+        if let Some(ref author) = doc_meta.author {
+            r.push_str(&format!("  Author:   {author}\n"));
+        }
+        if let Some(ref tool) = doc_meta.creator_tool {
+            r.push_str(&format!("  Tool:     {tool}\n"));
+        }
+        if let Some(rev) = doc_meta.revision_count {
+            r.push_str(&format!("  Revisions: {rev}\n"));
+        }
+        if let Some(pages) = doc_meta.page_count {
+            r.push_str(&format!("  Pages:    {pages}\n"));
+        }
+    }
+    r.push('\n');
 
     // Lexical analysis
     let lex = &score.analysis_result.lexical;
@@ -53,7 +101,6 @@ pub fn render(score: &UnifiedScore) -> crate::utils::errors::Result<String> {
     r.push_str("── Function Word Analysis ──\n");
     r.push_str(&format!("  Function word ratio: {:.1}%\n", fw.function_word_ratio * 100.0));
     r.push_str(&format!("  Distinct FW used:    {}\n", fw.function_word_diversity));
-    // Show top 10 function words
     let mut top_fw: Vec<(&String, &f64)> = fw.frequencies.iter().collect();
     top_fw.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap_or(std::cmp::Ordering::Equal));
     r.push_str("  Top function words (per 1000 words):\n");
@@ -87,7 +134,22 @@ pub fn render(score: &UnifiedScore) -> crate::utils::errors::Result<String> {
         r.push('\n');
     }
 
-    r.push_str("═══════════════════════════════════════════════════\n");
+    // Audit trail
+    r.push_str("── Audit Trail ──\n");
+    r.push_str(&format!("  Version:   Provenance v{}\n", score.audit.software_version));
+    r.push_str(&format!("  Timestamp: {}\n", score.audit.timestamp));
+    r.push_str(&format!("  File hash: {}\n", score.audit.input_file_hash));
+
+    r.push_str("\n═══════════════════════════════════════════════════\n");
 
     Ok(r)
+}
+
+/// Render a unified score as JSON.
+pub fn render_json(score: &UnifiedScore) -> crate::utils::errors::Result<String> {
+    serde_json::to_string_pretty(score).map_err(|e| {
+        crate::utils::errors::ProvenanceError::AnalysisError {
+            reason: format!("JSON serialization failed: {e}"),
+        }
+    })
 }

@@ -10,11 +10,23 @@ pub mod identity;
 pub mod scoring;
 pub mod crypto;
 pub mod utils;
+pub mod ml;
+pub mod data;
 
+use scoring::engine::OutputFormat;
 use utils::errors::{ProvenanceError, Result};
 
 /// Analyze a document, optionally comparing against an author profile.
 pub fn analyze(file_path: &str, profile_path: Option<&str>) -> Result<String> {
+    analyze_with_format(file_path, profile_path, OutputFormat::Text)
+}
+
+/// Analyze a document with a specific output format.
+pub fn analyze_with_format(
+    file_path: &str,
+    profile_path: Option<&str>,
+    format: OutputFormat,
+) -> Result<String> {
     let path = std::path::Path::new(file_path);
     if !path.exists() {
         return Err(ProvenanceError::FileNotFound {
@@ -39,7 +51,7 @@ pub fn analyze(file_path: &str, profile_path: Option<&str>) -> Result<String> {
 
     // Generate unified report
     let report = scoring::engine::score(&forensic_report, &analysis_result, identity_result.as_ref());
-    scoring::report::render(&report)
+    scoring::report::render_format(&report, format)
 }
 
 /// Build an author profile from verified writing samples.
@@ -65,6 +77,11 @@ pub fn build_profile(samples_dir: &str, name: &str) -> Result<String> {
 
 /// Run file forensics only (no text analysis).
 pub fn run_forensics(file_path: &str) -> Result<String> {
+    run_forensics_with_format(file_path, OutputFormat::Text)
+}
+
+/// Run file forensics with a specific output format.
+pub fn run_forensics_with_format(file_path: &str, format: OutputFormat) -> Result<String> {
     let path = std::path::Path::new(file_path);
     if !path.exists() {
         return Err(ProvenanceError::FileNotFound {
@@ -72,6 +89,10 @@ pub fn run_forensics(file_path: &str) -> Result<String> {
         });
     }
 
-    let report = forensics::examine(file_path)?;
-    Ok(format!("{report:#?}"))
+    let forensic_report = forensics::examine(file_path)?;
+    let text = extraction::extract_text(file_path).unwrap_or_default();
+    let analysis_result = analysis::analyze_text(&text)?;
+
+    let report = scoring::engine::score(&forensic_report, &analysis_result, None);
+    scoring::report::render_format(&report, format)
 }

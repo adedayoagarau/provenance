@@ -5,3 +5,5 @@ pub mod anomaly;
 pub mod features;
 pub mod delta;
 pub mod distances;
+pub mod changepoint;
+pub mod segmentation;
