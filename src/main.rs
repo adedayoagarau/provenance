@@ -60,6 +60,21 @@ enum Commands {
         format: String,
     },
 
+    /// Batch-analyze a directory of documents
+    Batch {
+        /// Directory containing documents to analyze
+        #[arg(short, long)]
+        dir: String,
+
+        /// Path to an author profile to compare against (optional)
+        #[arg(short, long)]
+        profile: Option<String>,
+
+        /// Output format: text, json
+        #[arg(long, default_value = "json")]
+        format: String,
+    },
+
     /// Rank multiple author candidates against a document
     Rank {
         /// Path to the document to analyze
@@ -104,6 +119,12 @@ fn main() -> anyhow::Result<()> {
             info!(file = %file, "Running DOCX forensic analysis");
             let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
             let report = provenance::run_docx_forensics(&file, output_format)?;
+            println!("{report}");
+        }
+        Commands::Batch { dir, profile, format } => {
+            info!(dir = %dir, "Running batch analysis");
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let report = provenance::batch_analyze(&dir, profile.as_deref(), output_format)?;
             println!("{report}");
         }
         Commands::Rank { file, profiles, format } => {

@@ -2,6 +2,37 @@
 
 use provenance::scoring::engine::OutputFormat;
 
+// === Batch Analysis ===
+
+#[test]
+fn test_batch_analyze_json() {
+    let result = provenance::batch_analyze(
+        "tests/fixtures",
+        None,
+        OutputFormat::Json,
+    )
+    .unwrap();
+
+    let json: serde_json::Value = serde_json::from_str(&result).unwrap();
+    assert!(json["total_files"].as_u64().unwrap() > 0);
+    assert!(json["successful"].as_u64().unwrap() > 0);
+    assert!(json["entries"].as_array().unwrap().len() > 0);
+}
+
+#[test]
+fn test_batch_analyze_text() {
+    let result = provenance::batch_analyze(
+        "tests/fixtures",
+        None,
+        OutputFormat::Text,
+    )
+    .unwrap();
+
+    assert!(result.contains("BATCH ANALYSIS SUMMARY"));
+    assert!(result.contains("Total files:"));
+    assert!(result.contains("Successful:"));
+}
+
 #[test]
 fn test_full_pipeline_text_output() {
     let result = provenance::analyze_with_format(

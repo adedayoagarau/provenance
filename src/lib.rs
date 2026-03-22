@@ -116,6 +116,149 @@ fn build_docx_profile(
     ))
 }
 
+/// Batch-analyze a directory of documents.
+pub fn batch_analyze(
+    dir_path: &str,
+    profile_path: Option<&str>,
+    format: OutputFormat,
+) -> Result<String> {
+    use rayon::prelude::*;
+
+    let files = extraction::collect_samples(dir_path)?;
+    if files.is_empty() {
+        return Err(ProvenanceError::ProfileError {
+            reason: format!("No documents found in '{dir_path}'"),
+        });
+    }
+
+    let profile = profile_path
+        .map(identity::profile::load)
+        .transpose()?;
+
+    let results: Vec<BatchEntry> = files
+        .par_iter()
+        .map(|file| {
+            let file_name = file.to_string();
+            match run_batch_entry(&file_name, profile.as_ref()) {
+                Ok(entry) => entry,
+                Err(e) => BatchEntry {
+                    file: file_name,
+                    status: "error".into(),
+                    error: Some(e.to_string()),
+                    confidence: None,
+                    register: None,
+                    acs_score: None,
+                    word_count: None,
+                },
+            }
+        })
+        .collect();
+
+    let summary = BatchSummary {
+        total_files: results.len(),
+        successful: results.iter().filter(|r| r.status == "ok").count(),
+        failed: results.iter().filter(|r| r.status == "error").count(),
+        avg_confidence: {
+            let confs: Vec<f64> = results.iter().filter_map(|r| r.confidence).collect();
+            if confs.is_empty() {
+                None
+            } else {
+                Some(confs.iter().sum::<f64>() / confs.len() as f64)
+            }
+        },
+        entries: results,
+    };
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&summary)?),
+        _ => Ok(render_batch_text(&summary)),
+    }
+}
+
+fn run_batch_entry(
+    file_path: &str,
+    profile: Option<&identity::profile::AuthorProfile>,
+) -> Result<BatchEntry> {
+    let forensic_report = forensics::examine(file_path)?;
+    let text = extraction::extract_text(file_path)?;
+    let analysis_result = analysis::analyze_text(&text)?;
+
+    let comparison = profile.map(|p| identity::comparison::compare(&analysis_result, p));
+    let register = analysis::register::classify(&analysis_result);
+    let baseline = analysis::baselines::compare(&analysis_result, &register.primary);
+    let acs = scoring::acs::compute(None, comparison.as_ref(), Some(&baseline));
+
+    Ok(BatchEntry {
+        file: file_path.to_string(),
+        status: "ok".into(),
+        error: None,
+        confidence: comparison.as_ref().map(|c| c.confidence.value),
+        register: Some(register.label.clone()),
+        acs_score: Some(acs.score),
+        word_count: Some(analysis_result.lexical.total_words),
+    })
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+struct BatchEntry {
+    file: String,
+    status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    confidence: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    register: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    acs_score: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    word_count: Option<usize>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+struct BatchSummary {
+    total_files: usize,
+    successful: usize,
+    failed: usize,
+    avg_confidence: Option<f64>,
+    entries: Vec<BatchEntry>,
+}
+
+fn render_batch_text(summary: &BatchSummary) -> String {
+    let mut out = String::new();
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  BATCH ANALYSIS SUMMARY\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+    out.push_str(&format!("  Total files: {}\n", summary.total_files));
+    out.push_str(&format!("  Successful:  {}\n", summary.successful));
+    out.push_str(&format!("  Failed:      {}\n", summary.failed));
+    if let Some(avg) = summary.avg_confidence {
+        out.push_str(&format!("  Avg confidence: {:.1}%\n", avg * 100.0));
+    }
+    out.push_str("\n── Results ──\n\n");
+
+    for entry in &summary.entries {
+        if entry.status == "ok" {
+            let reg = entry.register.as_deref().unwrap_or("?");
+            let acs = entry.acs_score.map(|s| format!("{:.0}", s)).unwrap_or_else(|| "?".into());
+            let words = entry.word_count.map(|w| format!("{w}")).unwrap_or_else(|| "?".into());
+            let conf = entry.confidence.map(|c| format!("{:.1}%", c * 100.0)).unwrap_or_else(|| "N/A".into());
+            out.push_str(&format!(
+                "  {} — {words} words, {reg}, ACS: {acs}, confidence: {conf}\n",
+                entry.file
+            ));
+        } else {
+            out.push_str(&format!(
+                "  {} — ERROR: {}\n",
+                entry.file,
+                entry.error.as_deref().unwrap_or("unknown")
+            ));
+        }
+    }
+
+    out
+}
+
 /// Rank multiple author candidates against a document.
 pub fn rank_candidates_with_format(
     file_path: &str,
