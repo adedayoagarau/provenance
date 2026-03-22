@@ -49,9 +49,71 @@ pub fn analyze_with_format(
         None
     };
 
-    // Generate unified report
-    let report = scoring::engine::score(&forensic_report, &analysis_result, identity_result.as_ref());
+    // Layer 4: Register classification + baselines
+    let register = analysis::register::classify(&analysis_result);
+    let baseline_report = analysis::baselines::compare(&analysis_result, &register.primary);
+
+    // Layer 5: DOCX deep forensics (if applicable)
+    let docx_profile = if file_path.to_lowercase().ends_with(".docx") {
+        build_docx_profile(path).ok()
+    } else {
+        None
+    };
+
+    // Layer 6: Scoring model
+    let acs = scoring::acs::compute(
+        docx_profile.as_ref(),
+        identity_result.as_ref(),
+        Some(&baseline_report),
+    );
+    let pii_score = scoring::pii::compute(
+        forensic_report.metadata.document_metadata.as_ref().map(|_| &forensic_report.metadata),
+        docx_profile.as_ref(),
+    );
+    let anomaly_report = scoring::anomalies::collect_anomalies(
+        docx_profile.as_ref(),
+        Some(&baseline_report),
+    );
+
+    // Generate full unified report
+    let report = scoring::engine::score_full(
+        &forensic_report,
+        &analysis_result,
+        identity_result.as_ref(),
+        register,
+        baseline_report,
+        acs,
+        pii_score,
+        anomaly_report,
+    );
     scoring::report::render_format(&report, format)
+}
+
+/// Build a DOCX construction profile for deep forensic analysis.
+fn build_docx_profile(
+    path: &std::path::Path,
+) -> Result<forensics::docx::profile::DocumentConstructionProfile> {
+    let archive = forensics::docx::DocxArchive::open(path)?;
+
+    let rsid_analysis = forensics::docx::rsid::analyze(
+        &archive.document_xml,
+        archive.settings_xml.as_deref(),
+    );
+    let formatting_analysis = forensics::docx::formatting::analyze(
+        &archive.document_xml,
+        archive.styles_xml.as_deref(),
+    );
+    let structural_forensics = forensics::docx::structure::analyze(&archive.document_xml);
+
+    let file_metadata = forensics::metadata::extract(path)?;
+    let doc_metadata = file_metadata.document_metadata.as_ref();
+
+    Ok(forensics::docx::profile::build_profile(
+        doc_metadata,
+        Some(&rsid_analysis),
+        Some(&formatting_analysis),
+        Some(&structural_forensics),
+    ))
 }
 
 /// Build an author profile from verified writing samples.
@@ -92,32 +154,7 @@ pub fn run_docx_forensics(file_path: &str, format: OutputFormat) -> Result<Strin
         });
     }
 
-    let archive = forensics::docx::DocxArchive::open(path)?;
-
-    // Run all sub-analyses
-    let rsid_analysis = forensics::docx::rsid::analyze(
-        &archive.document_xml,
-        archive.settings_xml.as_deref(),
-    );
-
-    let formatting_analysis = forensics::docx::formatting::analyze(
-        &archive.document_xml,
-        archive.styles_xml.as_deref(),
-    );
-
-    let structural_forensics = forensics::docx::structure::analyze(&archive.document_xml);
-
-    // Extract document metadata
-    let file_metadata = forensics::metadata::extract(path)?;
-    let doc_metadata = file_metadata.document_metadata.as_ref();
-
-    // Build construction profile
-    let profile = forensics::docx::profile::build_profile(
-        doc_metadata,
-        Some(&rsid_analysis),
-        Some(&formatting_analysis),
-        Some(&structural_forensics),
-    );
+    let profile = build_docx_profile(path)?;
 
     match format {
         OutputFormat::Json => {
@@ -262,17 +299,6 @@ fn render_docx_profile_text(
 
 /// Run file forensics with a specific output format.
 pub fn run_forensics_with_format(file_path: &str, format: OutputFormat) -> Result<String> {
-    let path = std::path::Path::new(file_path);
-    if !path.exists() {
-        return Err(ProvenanceError::FileNotFound {
-            path: file_path.to_string(),
-        });
-    }
-
-    let forensic_report = forensics::examine(file_path)?;
-    let text = extraction::extract_text(file_path).unwrap_or_default();
-    let analysis_result = analysis::analyze_text(&text)?;
-
-    let report = scoring::engine::score(&forensic_report, &analysis_result, None);
-    scoring::report::render_format(&report, format)
+    // Delegate to full pipeline (forensics-only is now just analyze without profile)
+    analyze_with_format(file_path, None, format)
 }
