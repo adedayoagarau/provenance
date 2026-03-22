@@ -1,7 +1,7 @@
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use crate::analysis::AnalysisResult;
+use crate::utils::errors::{ProvenanceError, Result};
 
 /// An author's stylistic profile built from verified writing samples.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -20,11 +20,13 @@ pub struct AuthorProfile {
 
 /// Build an author profile from multiple analysis results.
 pub fn build(name: &str, analyses: &[AnalysisResult]) -> Result<AuthorProfile> {
-    let n = analyses.len() as f64;
-    if n == 0.0 {
-        anyhow::bail!("No analyses provided to build profile");
+    if analyses.is_empty() {
+        return Err(ProvenanceError::ProfileError {
+            reason: "No analyses provided to build profile".to_string(),
+        });
     }
 
+    let n = analyses.len() as f64;
     let avg = |f: fn(&AnalysisResult) -> f64| -> f64 {
         analyses.iter().map(f).sum::<f64>() / n
     };

@@ -1,4 +1,3 @@
-use anyhow::Result;
 use std::collections::HashMap;
 
 /// Semantic analysis profile for a text.
@@ -10,7 +9,7 @@ pub struct SemanticProfile {
 }
 
 /// Perform semantic analysis on text.
-pub fn analyze(text: &str) -> Result<SemanticProfile> {
+pub fn analyze(text: &str) -> SemanticProfile {
     let paragraphs: Vec<&str> = text
         .split("\n\n")
         .map(|p| p.trim())
@@ -39,11 +38,11 @@ pub fn analyze(text: &str) -> Result<SemanticProfile> {
     // Simple coherence score based on paragraph connectivity
     let coherence_score = if paragraph_count > 1 { 0.5 } else { 1.0 };
 
-    Ok(SemanticProfile {
+    SemanticProfile {
         paragraph_count,
         topic_keywords,
         coherence_score,
-    })
+    }
 }
 
 fn stop_words() -> std::collections::HashSet<&'static str> {

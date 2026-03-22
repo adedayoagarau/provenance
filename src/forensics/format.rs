@@ -1,4 +1,3 @@
-use anyhow::Result;
 use std::path::Path;
 
 /// Detected file format information.
@@ -20,7 +19,7 @@ pub enum FileType {
 }
 
 /// Analyze the format of a file.
-pub fn analyze(path: &Path) -> Result<FormatInfo> {
+pub fn analyze(path: &Path) -> FormatInfo {
     let extension = path.extension()
         .map(|e| e.to_string_lossy().to_string())
         .unwrap_or_default();
@@ -34,9 +33,9 @@ pub fn analyze(path: &Path) -> Result<FormatInfo> {
         other => FileType::Unknown(other.to_string()),
     };
 
-    Ok(FormatInfo {
+    FormatInfo {
         extension,
         detected_type,
         encoding: "utf-8".to_string(),
-    })
+    }
 }

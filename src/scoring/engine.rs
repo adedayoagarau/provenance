@@ -1,5 +1,3 @@
-use anyhow::Result;
-
 use crate::analysis::AnalysisResult;
 use crate::forensics::ForensicReport;
 use crate::identity::comparison::ComparisonResult;
@@ -18,13 +16,13 @@ pub fn score(
     forensic_report: &ForensicReport,
     analysis_result: &AnalysisResult,
     comparison: Option<&ComparisonResult>,
-) -> Result<UnifiedScore> {
+) -> UnifiedScore {
     let overall_confidence = comparison.map(|c| c.confidence.value);
 
-    Ok(UnifiedScore {
+    UnifiedScore {
         forensic_report: forensic_report.clone(),
         analysis_result: analysis_result.clone(),
         comparison: comparison.cloned(),
         overall_confidence,
-    })
+    }
 }

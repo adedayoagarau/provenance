@@ -1,5 +1,3 @@
-use anyhow::Result;
-
 /// Syntactic analysis profile for a text.
 #[derive(Debug, Clone)]
 pub struct SyntacticProfile {
@@ -10,7 +8,7 @@ pub struct SyntacticProfile {
 }
 
 /// Perform syntactic analysis on text.
-pub fn analyze(text: &str) -> Result<SyntacticProfile> {
+pub fn analyze(text: &str) -> SyntacticProfile {
     let sentences: Vec<&str> = text
         .split(|c| c == '.' || c == '!' || c == '?')
         .map(|s| s.trim())
@@ -52,10 +50,10 @@ pub fn analyze(text: &str) -> Result<SyntacticProfile> {
         0.0
     };
 
-    Ok(SyntacticProfile {
+    SyntacticProfile {
         total_sentences,
         avg_sentence_length,
         sentence_length_variance,
         avg_words_per_sentence,
-    })
+    }
 }

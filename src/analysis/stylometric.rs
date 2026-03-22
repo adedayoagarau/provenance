@@ -1,4 +1,3 @@
-use anyhow::Result;
 use std::collections::HashMap;
 
 /// Stylometric analysis profile for a text.
@@ -13,7 +12,7 @@ pub struct StylometricProfile {
 }
 
 /// Perform stylometric analysis on text.
-pub fn analyze(text: &str) -> Result<StylometricProfile> {
+pub fn analyze(text: &str) -> StylometricProfile {
     let total_chars = text.len() as f64;
 
     let punctuation_marks = ['.', ',', ';', ':', '!', '?', '-', '(', ')', '"', '\''];
@@ -49,12 +48,12 @@ pub fn analyze(text: &str) -> Result<StylometricProfile> {
     let comma_ratio = ratio(',');
     let semicolon_ratio = ratio(';');
 
-    Ok(StylometricProfile {
+    StylometricProfile {
         punctuation_frequency,
         avg_paragraph_length,
         exclamation_ratio,
         question_ratio,
         comma_ratio,
         semicolon_ratio,
-    })
+    }
 }

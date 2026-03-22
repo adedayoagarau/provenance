@@ -1,4 +1,3 @@
-use anyhow::Result;
 use std::path::Path;
 use std::time::SystemTime;
 
@@ -25,7 +24,7 @@ pub enum EventType {
 }
 
 /// Construct a timeline from file metadata.
-pub fn construct(_path: &Path, metadata: &FileMetadata) -> Result<DocumentTimeline> {
+pub fn construct(_path: &Path, metadata: &FileMetadata) -> DocumentTimeline {
     let mut events = Vec::new();
 
     if let Some(created) = metadata.created {
@@ -54,5 +53,5 @@ pub fn construct(_path: &Path, metadata: &FileMetadata) -> Result<DocumentTimeli
 
     events.sort_by_key(|e| e.timestamp);
 
-    Ok(DocumentTimeline { events })
+    DocumentTimeline { events }
 }

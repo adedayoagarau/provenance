@@ -1,5 +1,3 @@
-use anyhow::Result;
-
 use crate::analysis::AnalysisResult;
 use super::confidence::ConfidenceScore;
 use super::profile::AuthorProfile;
@@ -21,7 +19,7 @@ pub struct FeatureDistance {
 }
 
 /// Compare an analysis result against an author profile.
-pub fn compare(analysis: &AnalysisResult, profile: &AuthorProfile) -> Result<ComparisonResult> {
+pub fn compare(analysis: &AnalysisResult, profile: &AuthorProfile) -> ComparisonResult {
     let mut distances = Vec::new();
 
     distances.push(feature_distance(
@@ -61,11 +59,11 @@ pub fn compare(analysis: &AnalysisResult, profile: &AuthorProfile) -> Result<Com
     let confidence_value = (1.0 - avg_distance).max(0.0).min(1.0);
     let confidence = super::confidence::compute(confidence_value, analysis.lexical.total_words);
 
-    Ok(ComparisonResult {
+    ComparisonResult {
         author_name: profile.name.clone(),
         confidence,
         feature_distances: distances,
-    })
+    }
 }
 
 fn feature_distance(name: &str, expected: f64, actual: f64) -> FeatureDistance {

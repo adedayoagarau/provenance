@@ -1,4 +1,5 @@
 use sha2::{Sha256, Digest};
+use crate::utils::errors::{self, Result};
 
 /// Compute SHA-256 hash of a byte slice.
 pub fn sha256(data: &[u8]) -> String {
@@ -9,7 +10,7 @@ pub fn sha256(data: &[u8]) -> String {
 }
 
 /// Compute SHA-256 hash of a file.
-pub fn sha256_file(path: &str) -> anyhow::Result<String> {
-    let data = std::fs::read(path)?;
+pub fn sha256_file(path: &str) -> Result<String> {
+    let data = errors::read_file(std::path::Path::new(path))?;
     Ok(sha256(&data))
 }

@@ -1,9 +1,7 @@
-use anyhow::Result;
-
 use super::engine::UnifiedScore;
 
 /// Render a unified score into a human-readable report.
-pub fn render(score: &UnifiedScore) -> Result<String> {
+pub fn render(score: &UnifiedScore) -> crate::utils::errors::Result<String> {
     let mut report = String::new();
 
     report.push_str("═══════════════════════════════════════════\n");

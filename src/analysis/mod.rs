@@ -3,8 +3,6 @@ pub mod syntactic;
 pub mod semantic;
 pub mod stylometric;
 
-use anyhow::Result;
-
 /// Complete text analysis result combining all analysis layers.
 #[derive(Debug, Clone)]
 pub struct AnalysisResult {
@@ -15,11 +13,11 @@ pub struct AnalysisResult {
 }
 
 /// Run all analysis layers on the given text.
-pub fn analyze_text(text: &str) -> Result<AnalysisResult> {
-    let lexical = lexical::analyze(text)?;
-    let syntactic = syntactic::analyze(text)?;
-    let semantic = semantic::analyze(text)?;
-    let stylometric = stylometric::analyze(text)?;
+pub fn analyze_text(text: &str) -> crate::utils::errors::Result<AnalysisResult> {
+    let lexical = lexical::analyze(text);
+    let syntactic = syntactic::analyze(text);
+    let semantic = semantic::analyze(text);
+    let stylometric = stylometric::analyze(text);
 
     Ok(AnalysisResult {
         lexical,

@@ -1,4 +1,3 @@
-use anyhow::Result;
 use std::collections::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -15,7 +14,7 @@ pub struct LexicalProfile {
 }
 
 /// Perform lexical analysis on text.
-pub fn analyze(text: &str) -> Result<LexicalProfile> {
+pub fn analyze(text: &str) -> LexicalProfile {
     let words: Vec<String> = text
         .unicode_words()
         .map(|w| w.to_lowercase())
@@ -49,7 +48,7 @@ pub fn analyze(text: &str) -> Result<LexicalProfile> {
         0.0
     };
 
-    Ok(LexicalProfile {
+    LexicalProfile {
         total_words,
         unique_words,
         type_token_ratio,
@@ -57,5 +56,5 @@ pub fn analyze(text: &str) -> Result<LexicalProfile> {
         hapax_ratio,
         avg_word_length,
         word_frequency: frequency,
-    })
+    }
 }
