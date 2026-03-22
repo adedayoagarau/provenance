@@ -186,42 +186,42 @@
 
 ---
 
-## Phase 4: ML Pipeline (Classical)
+## Phase 4: ML Pipeline (Classical) ✓
 
-### 4.1 Feature engineering pipeline
-- [ ] Automated text → feature vector extraction
-- [ ] Feature caching (compute once, reuse)
-- [ ] Feature metadata (name, cost, reliability)
-- [ ] **File**: `src/ml/features.rs`
+### 4.1 Feature engineering pipeline ✓
+- [x] Automated text → feature vector extraction
+- [x] Feature caching (compute once, reuse)
+- [x] Feature metadata (name, cost, reliability)
+- [x] **File**: `src/ml/features.rs`
 
-### 4.2 Classical ML models in Rust
-- [ ] SVM with RBF kernel (PAN competition winner)
-- [ ] Random Forest (interpretable baseline)
-- [ ] Logistic Regression (calibrated probabilities)
-- [ ] **Dependency**: `linfa` + sub-crates
-- [ ] **Files**: `src/ml/models.rs`, `src/ml/pipeline.rs`
+### 4.2 Classical ML models in Rust ✓
+- [x] SVM with RBF kernel (PAN competition winner) — via `linfa` feature flag
+- [x] K-Nearest Neighbors (built-in, no external deps)
+- [x] Logistic Regression (calibrated probabilities) — via `linfa` feature flag
+- [x] **Dependency**: `linfa` + sub-crates (optional feature)
+- [x] **Files**: `src/ml/models.rs`, `src/ml/pipeline.rs`
 
-### 4.3 Evaluation framework
-- [ ] K-fold cross-validation
-- [ ] Metrics: accuracy, precision, recall, F1, ROC-AUC, EER
-- [ ] Confusion matrices
-- [ ] Per-author performance breakdown
-- [ ] **File**: `src/ml/evaluation.rs`
+### 4.3 Evaluation framework ✓
+- [x] K-fold cross-validation (stratified)
+- [x] Metrics: accuracy, precision, recall, F1, EER
+- [x] Confusion matrices with Display formatting
+- [x] Per-author performance breakdown
+- [x] **File**: `src/ml/evaluation.rs`
 
-### 4.4 Python training scripts
-- [ ] `training/requirements.txt` — scikit-learn, pandas, numpy, matplotlib, onnx
-- [ ] `training/extract_features.py` — call Rust binary, save CSV
-- [ ] `training/train_svm.py` — SVM with grid search, export ONNX
-- [ ] `training/train_ensemble.py` — gradient boosting, export ONNX
-- [ ] `training/evaluate.py` — evaluation with visualization
+### 4.4 Python training scripts ✓
+- [x] `training/requirements.txt` — scikit-learn, pandas, numpy, matplotlib, onnx
+- [x] `training/extract_features.py` — call Rust binary, save CSV
+- [x] `training/train_svm.py` — SVM with grid search, export ONNX
+- [x] `training/train_ensemble.py` — gradient boosting + random forest, export ONNX
+- [x] `training/evaluate.py` — evaluation with visualization (confusion matrix, ROC, EER)
 - [ ] `training/README.md` — workflow instructions
 
-### 4.5 ONNX inference in Rust
-- [ ] Load ONNX models from Python training
-- [ ] Batch and single-document inference
-- [ ] Model registry (versioned model files)
-- [ ] **Dependency**: `ort` crate
-- [ ] **File**: `src/ml/inference.rs`
+### 4.5 ONNX inference in Rust ✓
+- [x] Load ONNX models from Python training
+- [x] Batch and single-document inference
+- [x] Model registry (versioned model files with manifest.json)
+- [x] **Dependency**: `ort` crate (optional `onnx` feature flag)
+- [x] **File**: `src/ml/inference.rs`
 
 ---
 
@@ -381,7 +381,7 @@
 | 0 | `toml` | `tokio`, `zip`, `xml-rs` |
 | 1 | `pulldown-cmark`, `lopdf`, `scraper`, `zip`, `rtf-parser`, `mailparse`, `csv`, `regex`, `encoding_rs`, `unicode-normalization` | |
 | 3 | `ndarray` | |
-| 4 | `linfa` + sub-crates, `ort` | |
+| 4 | `linfa` + sub-crates (optional), `ort` (optional) | |
 | Future | `whatlang`, `msg_parser`, `proptest`, `rayon`, `memmap2` | |
 
 ---

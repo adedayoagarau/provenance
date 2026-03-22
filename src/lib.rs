@@ -10,6 +10,7 @@ pub mod identity;
 pub mod scoring;
 pub mod crypto;
 pub mod utils;
+pub mod ml;
 
 use utils::errors::{ProvenanceError, Result};
 
