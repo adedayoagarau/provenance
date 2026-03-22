@@ -15,6 +15,7 @@ pub mod data;
 pub mod capture;
 pub mod adversarial;
 pub mod api;
+pub mod enterprise;
 
 use scoring::engine::OutputFormat;
 use utils::errors::{ProvenanceError, Result};
