@@ -12,6 +12,8 @@ pub mod crypto;
 pub mod utils;
 pub mod ml;
 pub mod data;
+pub mod capture;
+pub mod adversarial;
 
 use scoring::engine::OutputFormat;
 use utils::errors::{ProvenanceError, Result};
@@ -707,4 +709,229 @@ pub fn verify_certificate(
         OutputFormat::Json => Ok(serde_json::to_string_pretty(&result)?),
         _ => Ok(crypto::verify::render_text(&result)),
     }
+}
+
+/// Import a capture session from a JSON file and compute process metrics.
+pub fn import_capture(session_path: &str, format: OutputFormat) -> Result<String> {
+    let path = std::path::Path::new(session_path);
+    let session = capture::session::load_session(path)?;
+    let metrics = capture::metrics::compute_session_metrics(&session);
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&metrics)?),
+        _ => Ok(render_process_metrics(&session, &metrics)),
+    }
+}
+
+/// Import all capture sessions from a directory and compute aggregate metrics.
+pub fn import_capture_dir(dir_path: &str, format: OutputFormat) -> Result<String> {
+    let path = std::path::Path::new(dir_path);
+    let sessions = capture::session::load_sessions_from_dir(path)?;
+
+    if sessions.is_empty() {
+        return Err(utils::errors::ProvenanceError::ProfileError {
+            reason: format!("No capture sessions found in '{dir_path}'"),
+        });
+    }
+
+    let doc_name = sessions
+        .first()
+        .map(|s| s.document_name.clone())
+        .unwrap_or_else(|| "unknown".into());
+
+    let history = capture::session::build_history(&doc_name, sessions);
+    let metrics = capture::metrics::compute_history_metrics(&history);
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&metrics)?),
+        _ => Ok(render_history_metrics(&history, &metrics)),
+    }
+}
+
+fn render_process_metrics(
+    session: &capture::session::CaptureSession,
+    metrics: &capture::metrics::ProcessMetrics,
+) -> String {
+    let mut out = String::new();
+
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  PROCESS CAPTURE ANALYSIS\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+
+    out.push_str(&format!("  Document:  {}\n", session.document_name));
+    out.push_str(&format!("  Source:    {}\n", session.source.label()));
+    out.push_str(&format!("  Session:   {}\n", session.session_id));
+    out.push_str(&format!("  Events:    {}\n\n", session.event_count()));
+
+    render_metrics_body(&mut out, metrics);
+    out
+}
+
+fn render_history_metrics(
+    history: &capture::session::CaptureHistory,
+    metrics: &capture::metrics::ProcessMetrics,
+) -> String {
+    let mut out = String::new();
+
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  PROCESS CAPTURE ANALYSIS — Aggregate\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+
+    out.push_str(&format!("  Document:  {}\n", history.document_name));
+    out.push_str(&format!("  Sessions:  {}\n", history.sessions.len()));
+    out.push_str(&format!("  Events:    {}\n\n", history.summary.total_events));
+
+    render_metrics_body(&mut out, metrics);
+    out
+}
+
+fn render_metrics_body(out: &mut String, metrics: &capture::metrics::ProcessMetrics) {
+    out.push_str("── Writing Time ──\n");
+    out.push_str(&format!("  Total:      {:.1} minutes\n", metrics.total_writing_minutes));
+    out.push_str(&format!("  Sessions:   {}\n", metrics.session_count));
+    out.push_str(&format!("  Avg session: {:.1} minutes\n\n", metrics.avg_session_minutes));
+
+    out.push_str("── Content ──\n");
+    out.push_str(&format!("  Typing speed: {:.0} CPM\n", metrics.typing_speed_cpm));
+    out.push_str(&format!("  Paste ratio:  {:.1}%\n", metrics.paste_ratio * 100.0));
+    out.push_str(&format!("  Paste events: {}\n", metrics.paste_event_count));
+    out.push_str(&format!("  Largest paste: {} chars\n", metrics.largest_paste_chars));
+    out.push_str(&format!("  AI suggestions accepted: {}\n", metrics.ai_suggestions_accepted));
+    out.push_str(&format!("  AI content ratio: {:.1}%\n\n", metrics.ai_content_ratio * 100.0));
+
+    out.push_str("── Revision ──\n");
+    out.push_str(&format!("  Undo rate:    {:.1} per 1000 chars\n", metrics.undo_rate));
+    out.push_str(&format!("  Revision intensity: {:.1} per 1000 chars\n", metrics.revision_intensity));
+    out.push_str(&format!("  Focus losses/hour: {:.1}\n\n", metrics.focus_loss_per_hour));
+
+    if let Some(ref timing) = metrics.keystroke_timing {
+        out.push_str("── Keystroke Timing ──\n");
+        out.push_str(&format!("  Mean IKI:    {:.0} ms\n", timing.mean_iki_ms));
+        out.push_str(&format!("  Median IKI:  {:.0} ms\n", timing.median_iki_ms));
+        out.push_str(&format!("  StdDev IKI:  {:.0} ms\n", timing.stddev_iki_ms));
+        out.push_str(&format!("  CV:          {:.2}\n", timing.cv_iki));
+        out.push_str(&format!("  Fast (<50ms): {:.1}%\n", timing.fast_interval_ratio * 100.0));
+        out.push_str(&format!("  Pauses (>5s): {:.1}%\n\n", timing.pause_ratio * 100.0));
+    }
+
+    out.push_str(&format!("  Capture confidence: {:.0}%\n\n", metrics.capture_confidence * 100.0));
+
+    if !metrics.flags.is_empty() {
+        out.push_str("── Process Flags ──\n");
+        for flag in &metrics.flags {
+            let sev = match flag.severity {
+                capture::metrics::ProcessFlagSeverity::Low => "LOW",
+                capture::metrics::ProcessFlagSeverity::Medium => "MEDIUM",
+                capture::metrics::ProcessFlagSeverity::High => "HIGH",
+            };
+            out.push_str(&format!("  [{sev}] {}\n", flag.description));
+        }
+    }
+}
+
+/// Run adversarial robustness assessment and generate report.
+pub fn adversarial_report(format: OutputFormat) -> Result<String> {
+    let report = adversarial::accuracy::generate_template_report();
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&report)?),
+        _ => Ok(adversarial::accuracy::render_text(&report)),
+    }
+}
+
+/// Run humanizer detection on a document.
+pub fn detect_humanizer(file_path: &str, format: OutputFormat) -> Result<String> {
+    let text = extraction::extract_text(file_path)?;
+    let result = adversarial::humanizer::detect_humanizer(&text);
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&result)?),
+        _ => Ok(render_humanizer_result(&result)),
+    }
+}
+
+fn render_humanizer_result(result: &adversarial::humanizer::HumanizerDetectionResult) -> String {
+    let mut out = String::new();
+
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  HUMANIZER DETECTION ANALYSIS\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+
+    let status = if result.detected { "DETECTED" } else { "NOT DETECTED" };
+    out.push_str(&format!("  Status:     {status}\n"));
+    out.push_str(&format!("  Confidence: {:.0}%\n", result.confidence * 100.0));
+
+    if let Some(ref tool) = result.suspected_tool {
+        out.push_str(&format!("  Suspected:  {}\n", tool.label()));
+    }
+    out.push('\n');
+
+    out.push_str("── Indicators ──\n");
+    for indicator in &result.indicators {
+        let bar_len = (indicator.score * 20.0) as usize;
+        let bar: String = "█".repeat(bar_len) + &"░".repeat(20 - bar_len);
+        out.push_str(&format!(
+            "  {bar} {:.0}% — {}\n",
+            indicator.score * 100.0,
+            indicator.name,
+        ));
+        out.push_str(&format!("    {}\n", indicator.description));
+    }
+    out.push('\n');
+
+    out.push_str("── Assessment ──\n");
+    out.push_str(&format!("  {}\n", result.assessment));
+
+    out
+}
+
+/// Generate a bias audit template report.
+pub fn bias_audit_report(format: OutputFormat) -> Result<String> {
+    let report = adversarial::bias::generate_audit_template();
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&report)?),
+        _ => Ok(render_bias_audit(&report)),
+    }
+}
+
+fn render_bias_audit(report: &adversarial::bias::BiasAuditReport) -> String {
+    let mut out = String::new();
+
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  PROVENANCE BIAS AUDIT\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+
+    out.push_str(&format!("  Date:    {}\n", report.audit_date));
+    out.push_str(&format!("  Version: {}\n", report.software_version));
+    out.push_str(&format!("  Groups:  {}\n\n", report.groups_tested.len()));
+
+    out.push_str("── Population Groups ──\n");
+    let mut by_category: std::collections::HashMap<&str, Vec<&str>> = std::collections::HashMap::new();
+    for group in &report.groups_tested {
+        by_category
+            .entry(group.category.label())
+            .or_default()
+            .push(&group.name);
+    }
+    for (category, groups) in &by_category {
+        out.push_str(&format!("  {category}:\n"));
+        for group in groups {
+            out.push_str(&format!("    • {group}\n"));
+        }
+    }
+    out.push('\n');
+
+    out.push_str("── Documented Limitations ──\n");
+    for failure in &report.documented_failures {
+        out.push_str(&format!("  [{severity}] {desc}\n", severity = failure.severity.to_uppercase(), desc = failure.description));
+        out.push_str(&format!("    Mitigation: {}\n\n", failure.mitigation));
+    }
+
+    out.push_str("── Notes ──\n");
+    for limitation in &report.limitations {
+        out.push_str(&format!("  • {limitation}\n"));
+    }
+
+    out
 }

@@ -130,6 +130,57 @@ enum Commands {
         #[arg(long, default_value = "text")]
         format: String,
     },
+
+    /// Import a capture session from a plugin and compute process metrics
+    ImportCapture {
+        /// Path to a capture session JSON file, or directory of session files
+        #[arg(short, long)]
+        file: String,
+
+        /// Output format: text, json
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
+
+    /// Watch a Scrivener project directory for changes and capture events
+    CaptureWatch {
+        /// Path to the .scriv project directory
+        #[arg(short, long)]
+        project: String,
+
+        /// Poll interval in seconds
+        #[arg(long, default_value = "10")]
+        interval: u64,
+
+        /// Output path for the capture session
+        #[arg(short, long)]
+        output: Option<String>,
+    },
+
+    /// Run adversarial robustness assessment (evasion scenarios + robustness matrix)
+    AdversarialTest {
+        /// Output format: text, json
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
+
+    /// Detect humanizer tool artifacts in a document
+    DetectHumanizer {
+        /// Path to the document to analyze
+        #[arg(short, long)]
+        file: String,
+
+        /// Output format: text, json
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
+
+    /// Generate a bias audit report
+    BiasAudit {
+        /// Output format: text, json
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -201,7 +252,100 @@ fn main() -> anyhow::Result<()> {
             )?;
             println!("{report}");
         }
+        Commands::ImportCapture { file, format } => {
+            info!(file = %file, "Importing capture session");
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let path = std::path::Path::new(&file);
+            let report = if path.is_dir() {
+                provenance::import_capture_dir(&file, output_format)?
+            } else {
+                provenance::import_capture(&file, output_format)?
+            };
+            println!("{report}");
+        }
+        Commands::CaptureWatch { project, interval, output } => {
+            info!(project = %project, "Starting Scrivener capture watch");
+            let project_path = std::path::Path::new(&project);
+
+            println!("Watching Scrivener project: {project}");
+            println!("Poll interval: {interval}s");
+            println!("Press Ctrl+C to stop.\n");
+
+            let mut session = provenance::capture::session::CaptureSession::new(
+                &format!("scriv-{}", uuid_hex()),
+                project_path.file_name().and_then(|n| n.to_str()).unwrap_or("project"),
+                provenance::capture::events::CaptureSource::Scrivener,
+                &now_iso8601(),
+            );
+
+            let mut state = provenance::capture::scrivener::scan_project(project_path)?;
+            let start = std::time::Instant::now();
+
+            loop {
+                std::thread::sleep(std::time::Duration::from_secs(interval));
+
+                let new_state = provenance::capture::scrivener::scan_project(project_path)?;
+                let elapsed = start.elapsed().as_millis() as u64;
+                let events = provenance::capture::scrivener::diff_states(
+                    &state,
+                    &new_state,
+                    elapsed,
+                    session.event_count() as u64,
+                );
+
+                if !events.is_empty() {
+                    println!("[{:.1}s] {} change(s) detected", elapsed as f64 / 1000.0, events.len());
+                    for event in events {
+                        session.push_event(event);
+                    }
+                }
+
+                state = new_state;
+
+                // Auto-save session periodically
+                if session.event_count() % 50 == 0 && session.event_count() > 0 {
+                    let save_path = output
+                        .as_deref()
+                        .map(std::path::PathBuf::from)
+                        .unwrap_or_else(|| std::path::PathBuf::from(format!("{}_capture.json", session.document_name)));
+                    provenance::capture::session::save_session(&session, &save_path)?;
+                }
+            }
+        }
+        Commands::AdversarialTest { format } => {
+            info!("Running adversarial robustness assessment");
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let report = provenance::adversarial_report(output_format)?;
+            println!("{report}");
+        }
+        Commands::DetectHumanizer { file, format } => {
+            info!(file = %file, "Running humanizer detection");
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let report = provenance::detect_humanizer(&file, output_format)?;
+            println!("{report}");
+        }
+        Commands::BiasAudit { format } => {
+            info!("Generating bias audit report");
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let report = provenance::bias_audit_report(output_format)?;
+            println!("{report}");
+        }
     }
 
     Ok(())
+}
+
+fn uuid_hex() -> String {
+    use rand::RngCore;
+    let mut bytes = [0u8; 16];
+    rand::thread_rng().fill_bytes(&mut bytes);
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
+}
+
+fn now_iso8601() -> String {
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    provenance::scoring::engine::format_epoch_public(secs)
 }
