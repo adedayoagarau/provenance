@@ -5,6 +5,7 @@ use crate::analysis::register::RegisterClassification;
 use crate::analysis::baselines::RegisterBaselineReport;
 use crate::forensics::ForensicReport;
 use crate::identity::comparison::ComparisonResult;
+use crate::identity::explainability::ExplainedDecision;
 use crate::scoring::acs::AuthorshipConfidenceScore;
 use crate::scoring::pii::ProcessIntegrityIndex;
 use crate::scoring::anomalies::AnomalyReport;
@@ -30,6 +31,8 @@ pub struct UnifiedScore {
     pub anomaly_report: Option<AnomalyReport>,
     /// Evaluator-facing report content.
     pub evaluator_report: Option<EvaluatorReport>,
+    /// Feature importance explanation (when comparison is available).
+    pub explained_decision: Option<ExplainedDecision>,
 }
 
 /// Audit trail for reproducibility.
@@ -147,10 +150,11 @@ pub fn score(
         pii: None,
         anomaly_report: None,
         evaluator_report: None,
+        explained_decision: None,
     }
 }
 
-/// Aggregate scores from all layers, including Phase 13-15 components.
+/// Aggregate scores from all layers, including Phase 13-17 components.
 pub fn score_full(
     forensic_report: &ForensicReport,
     analysis_result: &AnalysisResult,
@@ -175,6 +179,11 @@ pub fn score_full(
         &register,
     );
 
+    // Generate explained decision when comparison is available
+    let explained_decision = comparison.map(|c| {
+        crate::identity::explainability::explain(c, analysis_result)
+    });
+
     UnifiedScore {
         forensic_report: forensic_report.clone(),
         analysis_result: analysis_result.clone(),
@@ -187,6 +196,7 @@ pub fn score_full(
         pii: Some(pii_score),
         anomaly_report: Some(anomaly_report),
         evaluator_report: Some(evaluator_report),
+        explained_decision,
     }
 }
 

@@ -134,6 +134,43 @@ pub fn render(score: &UnifiedScore) -> crate::utils::errors::Result<String> {
         r.push('\n');
     }
 
+    // Feature importance explanation (Phase 17)
+    if let Some(ref explained) = score.explained_decision {
+        r.push_str("── Feature Importance & Explanation ──\n");
+        r.push_str(&format!("  {}\n\n", explained.narrative));
+
+        if !explained.supporting_features.is_empty() {
+            r.push_str("  Supporting evidence (features matching the profile):\n");
+            for feat in &explained.supporting_features {
+                r.push_str(&format!("    ✓ {}\n", feat.interpretation));
+            }
+            r.push('\n');
+        }
+
+        if !explained.diverging_features.is_empty() {
+            r.push_str("  Diverging evidence (features differing from the profile):\n");
+            for feat in &explained.diverging_features {
+                r.push_str(&format!("    ✗ {}\n", feat.interpretation));
+            }
+            r.push('\n');
+        }
+
+        r.push_str(&format!("  Feature agreement: {:.0}% of features within expected range\n\n",
+            explained.agreement_ratio * 100.0));
+
+        r.push_str("  Feature ranking (by discriminative power):\n");
+        for feat in explained.ranked_features.iter().take(10) {
+            let dir = match feat.direction {
+                crate::identity::explainability::FeatureDirection::Above => "↑",
+                crate::identity::explainability::FeatureDirection::Below => "↓",
+                crate::identity::explainability::FeatureDirection::Match => "=",
+            };
+            r.push_str(&format!("    {:>2}. {dir} {:<30} dist: {:.4}\n",
+                feat.rank, feat.feature_name, feat.distance));
+        }
+        r.push('\n');
+    }
+
     // Evaluator report (Phase 15)
     if let Some(ref eval) = score.evaluator_report {
         // Reliability disclosure — always first

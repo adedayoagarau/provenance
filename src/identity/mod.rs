@@ -7,3 +7,4 @@ pub mod delta;
 pub mod distances;
 pub mod changepoint;
 pub mod segmentation;
+pub mod explainability;

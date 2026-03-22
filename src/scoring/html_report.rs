@@ -56,6 +56,11 @@ pub fn render(score: &UnifiedScore) -> Result<String> {
         render_comparison_section(&mut html, score);
     }
 
+    // Feature importance explanation
+    if let Some(ref explained) = score.explained_decision {
+        render_explainability_section(&mut html, explained);
+    }
+
     // Tampering section
     if score.forensic_report.tampering.risk_score > 0.0 {
         render_tampering_section(&mut html, score);
@@ -420,6 +425,66 @@ fn render_anomalies_section(
     html.push_str("</section>\n");
 }
 
+fn render_explainability_section(
+    html: &mut String,
+    explained: &crate::identity::explainability::ExplainedDecision,
+) {
+    html.push_str("<section>\n<h2>Feature Importance &amp; Explanation</h2>\n");
+    html.push_str(&format!("<p class=\"narrative\">{}</p>\n", escape(&explained.narrative)));
+
+    // Supporting features
+    if !explained.supporting_features.is_empty() {
+        html.push_str("<h3>Supporting Evidence</h3>\n<table>\n");
+        html.push_str("<tr><th>Feature</th><th>Document</th><th>Profile</th><th>Distance</th><th>Interpretation</th></tr>\n");
+        for feat in &explained.supporting_features {
+            html.push_str(&format!(
+                "<tr><td>{}</td><td>{:.4}</td><td>{:.4}</td><td>{:.4}</td><td>{}</td></tr>\n",
+                escape(&feat.display_name), feat.query_value, feat.profile_value, feat.distance,
+                escape(&feat.interpretation)
+            ));
+        }
+        html.push_str("</table>\n");
+    }
+
+    // Diverging features
+    if !explained.diverging_features.is_empty() {
+        html.push_str("<h3>Diverging Evidence</h3>\n<table>\n");
+        html.push_str("<tr><th>Feature</th><th>Document</th><th>Profile</th><th>Distance</th><th>Interpretation</th></tr>\n");
+        for feat in &explained.diverging_features {
+            html.push_str(&format!(
+                "<tr class=\"caution\"><td>{}</td><td>{:.4}</td><td>{:.4}</td><td>{:.4}</td><td>{}</td></tr>\n",
+                escape(&feat.display_name), feat.query_value, feat.profile_value, feat.distance,
+                escape(&feat.interpretation)
+            ));
+        }
+        html.push_str("</table>\n");
+    }
+
+    // Agreement ratio bar
+    let pct = (explained.agreement_ratio * 100.0) as u32;
+    let bar_class = if pct >= 70 { "high" } else if pct >= 40 { "medium" } else { "low" };
+    html.push_str(&format!(
+        "<div class=\"agreement\"><span>Feature Agreement: {pct}%</span>\
+         <div class=\"agreement-bar\"><div class=\"agreement-fill {bar_class}\" style=\"width:{pct}%\"></div></div></div>\n"
+    ));
+
+    // Feature ranking table (top 10)
+    html.push_str("<h3>Feature Ranking</h3>\n<table>\n");
+    html.push_str("<tr><th>#</th><th>Feature</th><th>Direction</th><th>Distance</th></tr>\n");
+    for feat in explained.ranked_features.iter().take(10) {
+        let dir = match feat.direction {
+            crate::identity::explainability::FeatureDirection::Above => "&uarr; Above",
+            crate::identity::explainability::FeatureDirection::Below => "&darr; Below",
+            crate::identity::explainability::FeatureDirection::Match => "&equals; Match",
+        };
+        html.push_str(&format!(
+            "<tr><td>{}</td><td>{}</td><td>{dir}</td><td>{:.4}</td></tr>\n",
+            feat.rank, escape(&feat.feature_name), feat.distance
+        ));
+    }
+    html.push_str("</table>\n</section>\n");
+}
+
 fn render_recommendations_section(
     html: &mut String,
     eval: &crate::scoring::content_design::EvaluatorReport,
@@ -502,6 +567,15 @@ code { background: #f0f0f0; padding: 0.15rem 0.3rem; border-radius: 3px; font-si
 .caveats li { margin-bottom: 0.2rem; }
 .framing-note { font-style: italic; font-size: 0.85rem; color: #666; margin-top: 0.75rem;
                 padding: 0.5rem; background: #f5f5f5; border-radius: 4px; }
+.narrative { font-size: 1rem; line-height: 1.6; margin-bottom: 1rem; }
+h3 { font-size: 0.95rem; margin: 1rem 0 0.3rem; color: #555; }
+.agreement { margin: 1rem 0; }
+.agreement span { font-weight: 600; font-size: 0.9rem; }
+.agreement-bar { height: 12px; background: #eee; border-radius: 6px; margin-top: 0.3rem; overflow: hidden; }
+.agreement-fill { height: 100%; border-radius: 6px; }
+.agreement-fill.high { background: #4caf50; }
+.agreement-fill.medium { background: #ff9800; }
+.agreement-fill.low { background: #f44336; }
 .audit { opacity: 0.8; font-size: 0.85rem; }
 footer { text-align: center; color: #999; font-size: 0.8rem; margin-top: 2rem;
          border-top: 1px solid #ddd; padding-top: 1rem; }
