@@ -83,6 +83,17 @@ pub fn run_forensics(file_path: &str) -> Result<String> {
     run_forensics_with_format(file_path, OutputFormat::Text)
 }
 
+/// Run DOCX-specific forensic analysis.
+pub fn run_docx_forensics(file_path: &str, format: OutputFormat) -> Result<String> {
+    let path = std::path::Path::new(file_path);
+    if !path.exists() {
+        return Err(ProvenanceError::FileNotFound {
+            path: file_path.to_string(),
+        });
+    }
+    forensics::docx::analyze_docx_formatted(path, format)
+}
+
 /// Run file forensics with a specific output format.
 pub fn run_forensics_with_format(file_path: &str, format: OutputFormat) -> Result<String> {
     let path = std::path::Path::new(file_path);
