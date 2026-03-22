@@ -8,3 +8,4 @@ pub mod distances;
 pub mod changepoint;
 pub mod segmentation;
 pub mod explainability;
+pub mod ranking;
