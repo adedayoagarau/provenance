@@ -247,30 +247,35 @@
 
 ---
 
-## Phase 6: File Forensics Enhancement
+## Phase 6: File Forensics Enhancement ✓
 
-### 6.1 Magic byte detection
-- [ ] Read first N bytes, match known signatures
-- [ ] PDF (%PDF-), ZIP (PK), DOCX (ZIP+[Content_Types].xml)
-- [ ] Handle extension vs. actual format mismatch
-- [ ] **File**: `src/forensics/format.rs` (enhance)
+### 6.1 Magic byte detection ✓
+- [x] Read first N bytes, match known signatures (PDF, ZIP, RTF, BOM)
+- [x] PDF (%PDF-), ZIP (PK), DOCX (ZIP+word/document.xml), RTF ({\\rtf)
+- [x] Handle extension vs. actual format mismatch with warnings
+- [x] Encoding detection (UTF-8, UTF-16 LE/BE, BOM, Windows-1252)
+- [x] **File**: `src/forensics/format.rs` (rewritten)
 
-### 6.2 Document metadata extraction
-- [ ] DOCX metadata (author, title, revision count) via docx-rs
-- [ ] PDF metadata (creator, producer, dates) via lopdf
-- [ ] **File**: `src/forensics/metadata.rs` (enhance)
+### 6.2 Document metadata extraction ✓
+- [x] DOCX metadata (author, title, revision count) via ZIP+XML parsing
+- [x] PDF metadata (creator, producer, dates, page count) via lopdf
+- [x] Custom metadata key-value extraction
+- [x] **File**: `src/forensics/metadata.rs` (rewritten)
 
-### 6.3 Tampering detection
-- [ ] Date inconsistency detection
-- [ ] Tool fingerprint analysis
-- [ ] Hidden content detection
-- [ ] **File**: `src/forensics/tampering.rs`
+### 6.3 Tampering detection ✓
+- [x] Date inconsistency detection (created > modified, future dates, metadata vs filesystem)
+- [x] Tool fingerprint analysis (Microsoft Word, LibreOffice, Google Docs, LaTeX)
+- [x] Hidden content detection (zero-width characters, unusual whitespace)
+- [x] Metadata anomaly detection (revision count vs file size)
+- [x] Risk scoring (0.0–1.0)
+- [x] **File**: `src/forensics/tampering.rs`
 
-### 6.4 Enhanced timeline
-- [ ] DOCX revision history extraction
-- [ ] Multi-source timeline correlation
-- [ ] Timeline anomaly scoring
-- [ ] **File**: `src/forensics/timeline.rs` (enhance)
+### 6.4 Enhanced timeline ✓
+- [x] DOCX revision history extraction (interpolated from revision count)
+- [x] Multi-source timeline correlation (filesystem + document metadata)
+- [x] Timeline anomaly scoring with explanations
+- [x] Future date detection, creation-after-modification detection
+- [x] **File**: `src/forensics/timeline.rs` (rewritten)
 
 ---
 
