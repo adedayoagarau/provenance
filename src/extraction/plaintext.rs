@@ -1,14 +1,40 @@
 use crate::utils::errors::{ProvenanceError, Result};
 use std::path::Path;
 
+/// Size threshold above which we use memory-mapped I/O (1 MB).
+const MMAP_THRESHOLD: u64 = 1024 * 1024;
+
 /// Extract text from a plain text file, handling encoding detection.
+///
+/// Uses memory-mapped I/O for files larger than 1 MB to avoid copying
+/// file contents into a heap-allocated buffer.
 pub fn extract(path: &Path) -> Result<String> {
-    let bytes = std::fs::read(path).map_err(|e| ProvenanceError::IoWithPath {
+    let metadata = std::fs::metadata(path).map_err(|e| ProvenanceError::IoWithPath {
         path: path.display().to_string(),
         source: e,
     })?;
 
-    decode_bytes(&bytes, path)
+    let bytes: Box<dyn AsRef<[u8]>> = if metadata.len() >= MMAP_THRESHOLD {
+        // Use memory-mapped I/O for large files
+        let file = std::fs::File::open(path).map_err(|e| ProvenanceError::IoWithPath {
+            path: path.display().to_string(),
+            source: e,
+        })?;
+        let mmap = unsafe { memmap2::MmapOptions::new().map(&file) }
+            .map_err(|e| ProvenanceError::IoWithPath {
+                path: path.display().to_string(),
+                source: e,
+            })?;
+        Box::new(mmap)
+    } else {
+        let data = std::fs::read(path).map_err(|e| ProvenanceError::IoWithPath {
+            path: path.display().to_string(),
+            source: e,
+        })?;
+        Box::new(data)
+    };
+
+    decode_bytes((*bytes).as_ref(), path)
 }
 
 /// Decode bytes to string, detecting encoding.
