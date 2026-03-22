@@ -86,57 +86,66 @@
 
 ---
 
-## Phase 2: Core Stylometric Features (Research-Validated)
+## Phase 2: Core Stylometric Features (Research-Validated) ✓
 
-> Ordered by proven effectiveness in authorship attribution research.
+### 2.1 Function word analysis ✓
+- [x] 200+ English function words (determiners, prepositions, conjunctions, pronouns, auxiliaries, adverbs)
+- [x] Frequency distribution normalized per 1000 words
+- [x] Function word ratio + diversity metrics
+- [x] **File**: `src/analysis/function_words.rs`
+- [x] 2 unit tests
 
-### 2.1 Function word analysis (HIGHEST PRIORITY)
-- [ ] Curated list of 300+ English function words
-- [ ] Frequency distribution (normalized per 1000 words)
-- [ ] Most reliable stylometric feature class — used unconsciously, hard to fake
-- [ ] **File**: `src/analysis/function_words.rs`
-- [ ] Tests: known distributions against reference texts
+### 2.2 Character n-gram analysis ✓
+- [x] Character-level n-grams (2, 3, 4, 5-grams)
+- [x] Word-level bigrams
+- [x] Top-500 frequency profiles per n-value
+- [x] **File**: `src/analysis/ngrams.rs`
+- [x] 5 unit tests
 
-### 2.2 Character n-gram analysis
-- [ ] Character-level n-grams (2-gram through 5-gram)
-- [ ] Word-level bigrams and trigrams
-- [ ] N-gram frequency profiles (top-N most frequent)
-- [ ] Language-independent, captures subword patterns
-- [ ] **File**: `src/analysis/ngrams.rs`
-- [ ] Tests: known n-gram counts for sample texts
+### 2.3 Vocabulary richness (corrected metrics) ✓
+- [x] MATTR (Moving Average Type-Token Ratio, window=500)
+- [x] Yule's K (frequency spectrum-based, length-independent)
+- [x] Honoré's R (hapax-based richness)
+- [x] Brunet's W (N^(V^-0.172))
+- [x] Dis-legomena count + hapax/dis ratio
+- [x] Word length distribution histogram
+- [x] TTR flagged as length-dependent (kept for backward compat)
+- [x] **File**: `src/analysis/lexical.rs`
 
-### 2.3 Vocabulary richness (corrected metrics)
-- [ ] MATTR (Moving Average Type-Token Ratio) — window-based, length-independent
-- [ ] HD-D (Hypergeometric Distribution D) — sample-size independent
-- [ ] Yule's K — vocabulary richness independent of text length
-- [ ] Honoré's R — based on hapax legomena ratio
-- [ ] Flag existing TTR as length-dependent (keep for backward compat)
-- [ ] **File**: `src/analysis/lexical.rs` (enhance)
-- [ ] Tests: verify length-independence
+### 2.4 Sentence structure enhancements ✓
+- [x] Sentence type classification (declarative, interrogative, exclamatory)
+- [x] Sentence opening word patterns (first-word frequency map)
+- [x] Passive voice detection heuristic (be-form + past participle)
+- [x] Sentence length distribution (word-count histogram)
+- [x] Improved sentence splitting (abbreviation-aware)
+- [x] **File**: `src/analysis/syntactic.rs`
 
-### 2.4 Sentence structure enhancements
-- [ ] Sentence type classification (declarative, interrogative, exclamatory, imperative)
-- [ ] Sentence opening word patterns
-- [ ] Passive voice detection heuristic
-- [ ] Sentence length distribution histogram
-- [ ] **File**: `src/analysis/syntactic.rs` (enhance)
+### 2.5 Advanced punctuation & formatting ✓
+- [x] Em-dash, en-dash, hyphen counting (including --- and -- patterns)
+- [x] Ellipsis counting (… and ...)
+- [x] Parenthetical expression frequency
+- [x] Quote mark style (single vs double, smart vs straight)
+- [x] Contraction detection (60+ common contractions)
+- [x] Hedge word frequency (40+ markers: perhaps, maybe, somewhat, etc.)
+- [x] Intensifier frequency (35+ markers: very, extremely, absolutely, etc.)
+- [x] Paragraph structure: count, length variance, short paragraph ratio
+- [x] **File**: `src/analysis/stylometric.rs`
 
-### 2.5 Advanced punctuation & formatting
-- [ ] Em-dash vs en-dash vs hyphen usage
-- [ ] Parenthetical expression frequency
-- [ ] Ellipsis patterns
-- [ ] Quote mark style (single vs double)
-- [ ] Contraction usage (don't vs do not)
-- [ ] Hedge word frequency (maybe, perhaps, somewhat)
-- [ ] Intensifier frequency (very, extremely, absolutely)
-- [ ] **File**: `src/analysis/stylometric.rs` (enhance)
+### 2.6 Discourse markers & readability ✓
+- [x] 40+ single-word discourse markers + 25+ multi-word phrases
+- [x] Normalized frequency per 1000 words
+- [x] Flesch-Kincaid Grade Level
+- [x] Gunning Fog Index
+- [x] Coleman-Liau Index
+- [x] Automated Readability Index
+- [x] Syllable counting heuristic
+- [x] Topic keyword extraction REMOVED (confounds authorship signals)
+- [x] **File**: `src/analysis/semantic.rs` (rewritten)
 
-### 2.6 Discourse marker analysis (replaces topic keywords)
-- [ ] Catalog: however, therefore, moreover, in addition, etc.
-- [ ] Frequency and position patterns
-- [ ] Transitional phrases ARE stylometric (unlike topic keywords)
-- [ ] Readability scores: Flesch-Kincaid, Gunning Fog, Coleman-Liau
-- [ ] **File**: `src/analysis/semantic.rs` (rewrite)
+### 2.7 Profile & comparison updates ✓
+- [x] AuthorProfile expanded to 22 averaged features (was 9)
+- [x] Comparison engine uses 18 feature distances (was 6)
+- [x] Report renderer shows all new analysis sections
 
 ---
 
