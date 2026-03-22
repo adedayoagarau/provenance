@@ -149,39 +149,40 @@
 
 ---
 
-## Phase 3: Distance Metrics & Comparison Engine
+## Phase 3: Distance Metrics & Comparison Engine ✓
 
-### 3.1 Burrows' Delta (FOUNDATIONAL)
-- [ ] Select N most frequent words from corpus (typically 100-500)
-- [ ] Compute z-scores for each word frequency
-- [ ] Classic Delta — Manhattan distance (Burrows 2002)
-- [ ] Cosine Delta — Wurzburg variant (often outperforms classic)
-- [ ] Eder's Delta — more features with weighting
-- [ ] **File**: `src/identity/delta.rs`
-- [ ] **Dependency**: `ndarray` crate
-- [ ] Tests: validate against known Federalist Papers attributions
+### 3.1 Burrows' Delta ✓
+- [x] Classic Delta (Manhattan distance on z-scores) — Burrows 2002
+- [x] Cosine Delta (Wurzburg variant, default) — Evert et al. 2017
+- [x] Euclidean Delta (Linear Delta)
+- [x] Two-document and corpus-based z-normalization
+- [x] Multi-candidate ranking by Cosine Delta
+- [x] **File**: `src/identity/delta.rs`
+- [x] 4 unit tests (identity, positivity, symmetry, ranking)
 
-### 3.2 Statistical distance measures
-- [ ] Cosine similarity
-- [ ] Kullback-Leibler divergence
-- [ ] Jensen-Shannon divergence (symmetric KL)
-- [ ] Chi-squared distance
-- [ ] **File**: `src/identity/comparison.rs` (enhance)
-- [ ] Tests: mathematical correctness with known inputs
+### 3.2 Statistical distance measures ✓
+- [x] Cosine similarity + cosine distance
+- [x] Manhattan (L1) distance
+- [x] Euclidean (L2) distance
+- [x] Kullback-Leibler divergence
+- [x] Jensen-Shannon divergence (symmetric KL)
+- [x] Chi-squared distance
+- [x] **File**: `src/identity/distances.rs`
+- [x] 6 unit tests (mathematical correctness)
 
-### 3.3 Feature vector construction
-- [ ] Unified feature vector from all analysis modules
-- [ ] Feature normalization: z-score, min-max scaling
-- [ ] Configurable feature sets: minimal / standard / comprehensive
-- [ ] Serialization for profile storage
-- [ ] **File**: `src/identity/features.rs`
+### 3.3 Feature vector construction ✓
+- [x] Unified FeatureVector from all analysis modules
+- [x] 3 configurable feature sets: Minimal / Standard / Comprehensive
+- [x] Z-score normalization via CorpusStats
+- [x] Serializable (Serde)
+- [x] **File**: `src/identity/features.rs`
+- [x] 2 unit tests (corpus stats, feature set sizes)
 
-### 3.4 Enhanced confidence scoring
-- [ ] Likelihood ratio framework
-- [ ] Confidence intervals (not just point estimates)
-- [ ] Feature contribution breakdown
-- [ ] Text-length adjusted confidence curves
-- [ ] **File**: `src/identity/confidence.rs` (rewrite)
+### 3.4 Enhanced confidence scoring ✓
+- [x] Delta-to-probability sigmoid calibration
+- [x] Text-length penalty (6 tiers from <100 to 2000+ words)
+- [x] Feature availability factor
+- [x] **File**: `src/identity/confidence.rs` (rewritten)
 
 ---
 
