@@ -4,43 +4,56 @@
 //! by analyzing deeply embedded stylistic, structural, and behavioral patterns.
 
 pub mod forensics;
+pub mod extraction;
 pub mod analysis;
 pub mod identity;
 pub mod scoring;
 pub mod crypto;
 pub mod utils;
 
-use anyhow::Result;
+use utils::errors::{ProvenanceError, Result};
 
 /// Analyze a document, optionally comparing against an author profile.
-pub async fn analyze(file_path: &str, profile_path: Option<&str>) -> Result<String> {
+pub fn analyze(file_path: &str, profile_path: Option<&str>) -> Result<String> {
+    let path = std::path::Path::new(file_path);
+    if !path.exists() {
+        return Err(ProvenanceError::FileNotFound {
+            path: file_path.to_string(),
+        });
+    }
+
     // Layer 1: File forensics
     let forensic_report = forensics::examine(file_path)?;
 
-    // Layer 2: Text analysis
-    let text = forensics::extract_text(file_path)?;
+    // Layer 2: Text extraction (format-aware) + analysis
+    let text = extraction::extract_text(file_path)?;
     let analysis_result = analysis::analyze_text(&text)?;
 
     // Layer 3: Identity comparison (if profile provided)
     let identity_result = if let Some(profile) = profile_path {
         let author_profile = identity::profile::load(profile)?;
-        Some(identity::comparison::compare(&analysis_result, &author_profile)?)
+        Some(identity::comparison::compare(&analysis_result, &author_profile))
     } else {
         None
     };
 
     // Generate unified report
-    let report = scoring::engine::score(&forensic_report, &analysis_result, identity_result.as_ref())?;
+    let report = scoring::engine::score(&forensic_report, &analysis_result, identity_result.as_ref());
     scoring::report::render(&report)
 }
 
 /// Build an author profile from verified writing samples.
-pub async fn build_profile(samples_dir: &str, name: &str) -> Result<String> {
-    let samples = forensics::collect_samples(samples_dir)?;
-    let mut analyses = Vec::new();
+pub fn build_profile(samples_dir: &str, name: &str) -> Result<String> {
+    let samples = extraction::collect_samples(samples_dir)?;
+    if samples.is_empty() {
+        return Err(ProvenanceError::ProfileError {
+            reason: format!("No sample files found in '{samples_dir}'"),
+        });
+    }
 
+    let mut analyses = Vec::new();
     for sample in &samples {
-        let text = forensics::extract_text(sample)?;
+        let text = extraction::extract_text(sample)?;
         let result = analysis::analyze_text(&text)?;
         analyses.push(result);
     }
@@ -51,7 +64,14 @@ pub async fn build_profile(samples_dir: &str, name: &str) -> Result<String> {
 }
 
 /// Run file forensics only (no text analysis).
-pub async fn run_forensics(file_path: &str) -> Result<String> {
+pub fn run_forensics(file_path: &str) -> Result<String> {
+    let path = std::path::Path::new(file_path);
+    if !path.exists() {
+        return Err(ProvenanceError::FileNotFound {
+            path: file_path.to_string(),
+        });
+    }
+
     let report = forensics::examine(file_path)?;
     Ok(format!("{report:#?}"))
 }

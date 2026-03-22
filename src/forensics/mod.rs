@@ -3,11 +3,12 @@ pub mod integrity;
 pub mod format;
 pub mod timeline;
 
-use anyhow::Result;
+use crate::utils::errors::{self, Result};
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 /// Forensic examination report for a file.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ForensicReport {
     pub metadata: metadata::FileMetadata,
     pub integrity: integrity::IntegrityResult,
@@ -21,8 +22,8 @@ pub fn examine(file_path: &str) -> Result<ForensicReport> {
 
     let metadata = metadata::extract(path)?;
     let integrity = integrity::check(path)?;
-    let format_info = format::analyze(path)?;
-    let timeline = timeline::construct(path, &metadata)?;
+    let format_info = format::analyze(path);
+    let timeline = timeline::construct(path, &metadata);
 
     Ok(ForensicReport {
         metadata,
@@ -35,8 +36,7 @@ pub fn examine(file_path: &str) -> Result<ForensicReport> {
 /// Extract plain text from a document file.
 pub fn extract_text(file_path: &str) -> Result<String> {
     let path = Path::new(file_path);
-    let content = std::fs::read_to_string(path)?;
-    Ok(content)
+    errors::read_file_string(path)
 }
 
 /// Collect file paths from a samples directory.

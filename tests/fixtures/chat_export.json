@@ -1,0 +1,22 @@
+{
+  "messages": [
+    {
+      "id": 1,
+      "author": "alice",
+      "content": "Hello everyone, this is the first message in the chat export.",
+      "timestamp": "2026-03-22T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "author": "bob",
+      "content": "Thanks for starting the conversation. I have some thoughts to share about the project direction.",
+      "timestamp": "2026-03-22T10:05:00Z"
+    },
+    {
+      "id": 3,
+      "author": "alice",
+      "content": "Great, looking forward to hearing your perspective on the implementation strategy.",
+      "timestamp": "2026-03-22T10:10:00Z"
+    }
+  ]
+}

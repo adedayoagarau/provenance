@@ -1,12 +1,6 @@
 use clap::Parser;
+use provenance::utils;
 use tracing::info;
-
-mod forensics;
-mod analysis;
-mod identity;
-mod scoring;
-mod crypto;
-mod utils;
 
 #[derive(Parser, Debug)]
 #[command(name = "provenance", version, about = "Forensic authorship verification platform")]
@@ -47,8 +41,7 @@ enum Commands {
     },
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
     utils::logging::init();
 
     let cli = Cli::parse();
@@ -57,17 +50,17 @@ async fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::Analyze { file, profile } => {
             info!(file = %file, "Starting document analysis");
-            let report = provenance::analyze(&file, profile.as_deref()).await?;
+            let report = provenance::analyze(&file, profile.as_deref())?;
             println!("{report}");
         }
         Commands::Profile { samples, name } => {
             info!(name = %name, "Building author profile");
-            let profile = provenance::build_profile(&samples, &name).await?;
+            let profile = provenance::build_profile(&samples, &name)?;
             println!("Profile created: {profile}");
         }
         Commands::Forensics { file } => {
             info!(file = %file, "Running file forensics");
-            let report = provenance::run_forensics(&file).await?;
+            let report = provenance::run_forensics(&file)?;
             println!("{report}");
         }
     }

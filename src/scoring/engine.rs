@@ -1,11 +1,11 @@
-use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
 use crate::analysis::AnalysisResult;
 use crate::forensics::ForensicReport;
 use crate::identity::comparison::ComparisonResult;
 
 /// Unified score combining all analysis layers.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UnifiedScore {
     pub forensic_report: ForensicReport,
     pub analysis_result: AnalysisResult,
@@ -18,13 +18,13 @@ pub fn score(
     forensic_report: &ForensicReport,
     analysis_result: &AnalysisResult,
     comparison: Option<&ComparisonResult>,
-) -> Result<UnifiedScore> {
+) -> UnifiedScore {
     let overall_confidence = comparison.map(|c| c.confidence.value);
 
-    Ok(UnifiedScore {
+    UnifiedScore {
         forensic_report: forensic_report.clone(),
         analysis_result: analysis_result.clone(),
         comparison: comparison.cloned(),
         overall_confidence,
-    })
+    }
 }

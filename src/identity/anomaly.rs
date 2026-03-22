@@ -1,8 +1,10 @@
+use serde::{Deserialize, Serialize};
+
 use crate::analysis::AnalysisResult;
 use super::profile::AuthorProfile;
 
 /// An anomaly detected in a document section.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Anomaly {
     pub section: String,
     pub deviation_score: f64,
