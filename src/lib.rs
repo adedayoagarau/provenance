@@ -179,7 +179,7 @@ fn run_batch_entry(
     file_path: &str,
     profile: Option<&identity::profile::AuthorProfile>,
 ) -> Result<BatchEntry> {
-    let forensic_report = forensics::examine(file_path)?;
+    let _forensic_report = forensics::examine(file_path)?;
     let text = extraction::extract_text(file_path)?;
     let analysis_result = analysis::analyze_text(&text)?;
 
@@ -560,4 +560,151 @@ fn render_docx_profile_text(
 pub fn run_forensics_with_format(file_path: &str, format: OutputFormat) -> Result<String> {
     // Delegate to full pipeline (forensics-only is now just analyze without profile)
     analyze_with_format(file_path, None, format)
+}
+
+/// Generate an Ed25519 signing keypair and save to files.
+pub fn generate_signing_key(output_dir: &str) -> Result<(String, String)> {
+    let dir = std::path::Path::new(output_dir);
+    std::fs::create_dir_all(dir).map_err(|e| utils::errors::ProvenanceError::IoWithPath {
+        path: output_dir.to_string(),
+        source: e,
+    })?;
+
+    let key = crypto::keys::generate_keypair();
+    let pub_info = crypto::keys::PublicKeyInfo::from_verifying_key(&key.verifying_key());
+
+    let private_path = dir.join("provenance_signing.key");
+    let public_path = dir.join("provenance_public.json");
+
+    crypto::keys::save_signing_key(&key, &private_path)?;
+    crypto::keys::save_public_key(&pub_info, &public_path)?;
+
+    Ok((
+        private_path.display().to_string(),
+        public_path.display().to_string(),
+    ))
+}
+
+/// Generate a Provenance certificate for an analyzed document.
+pub fn generate_certificate(
+    file_path: &str,
+    signing_key_path: &str,
+    profile_path: Option<&str>,
+    output_path: Option<&str>,
+) -> Result<String> {
+    let path = std::path::Path::new(file_path);
+    if !path.exists() {
+        return Err(utils::errors::ProvenanceError::FileNotFound {
+            path: file_path.to_string(),
+        });
+    }
+
+    // Load signing key
+    let signing_key =
+        crypto::keys::load_signing_key(std::path::Path::new(signing_key_path))?;
+
+    // Run full analysis
+    let forensic_report = forensics::examine(file_path)?;
+    let text = extraction::extract_text(file_path)?;
+    let analysis_result = analysis::analyze_text(&text)?;
+
+    let comparison = if let Some(profile) = profile_path {
+        let author_profile = identity::profile::load(profile)?;
+        Some(identity::comparison::compare(&analysis_result, &author_profile))
+    } else {
+        None
+    };
+
+    let register = analysis::register::classify(&analysis_result);
+    let baseline_report = analysis::baselines::compare(&analysis_result, &register.primary);
+
+    let docx_profile = if file_path.to_lowercase().ends_with(".docx") {
+        build_docx_profile(path).ok()
+    } else {
+        None
+    };
+
+    let acs = scoring::acs::compute(
+        docx_profile.as_ref(),
+        comparison.as_ref(),
+        Some(&baseline_report),
+    );
+    let pii_score = scoring::pii::compute(
+        forensic_report.metadata.document_metadata.as_ref().map(|_| &forensic_report.metadata),
+        docx_profile.as_ref(),
+    );
+    let anomaly_report = scoring::anomalies::collect_anomalies(
+        docx_profile.as_ref(),
+        Some(&baseline_report),
+    );
+
+    // Build certificate input
+    let construction_pattern_str = docx_profile.as_ref().map(|p| {
+        match p.construction_pattern {
+            forensics::docx::profile::ConstructionPattern::Organic => "Organic",
+            forensics::docx::profile::ConstructionPattern::BulkInsertion => "BulkInsertion",
+            forensics::docx::profile::ConstructionPattern::Hybrid => "Hybrid",
+            forensics::docx::profile::ConstructionPattern::Insufficient => "Insufficient",
+        }
+    });
+
+    let input = crypto::certificate::CertificateInput {
+        file_name: &forensic_report.metadata.file_name,
+        file_hash: &forensic_report.integrity.sha256,
+        file_size: forensic_report.integrity.file_size,
+        format: &format!("{:?}", forensic_report.format.detected_type),
+        word_count: analysis_result.lexical.total_words,
+        acs_score: acs.score,
+        acs_margin: acs.margin,
+        pii_score: pii_score.score,
+        pii_level: pii_score.level.label(),
+        register: &register.label,
+        anomaly_count: anomaly_report.flags.len(),
+        construction_pattern: construction_pattern_str,
+        has_docx_forensics: docx_profile.is_some(),
+        has_author_profile: comparison.is_some(),
+        rsid_session_count: docx_profile.as_ref().and_then(|p| {
+            p.rsid_analysis.as_ref().map(|r| r.unique_rsid_count)
+        }),
+        formatting_consistency: docx_profile.as_ref().and_then(|p| {
+            p.formatting_analysis.as_ref().map(|f| f.formatting_consistency_score)
+        }),
+    };
+
+    let cert = crypto::certificate::generate(&input, &signing_key)?;
+
+    // Determine output path
+    let cert_path = if let Some(out) = output_path {
+        std::path::PathBuf::from(out)
+    } else {
+        let stem = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("document");
+        std::path::PathBuf::from(format!("{stem}.provenance.json"))
+    };
+
+    crypto::certificate::save(&cert, &cert_path)?;
+    Ok(cert_path.display().to_string())
+}
+
+/// Verify a Provenance certificate.
+pub fn verify_certificate(
+    cert_path: &str,
+    document_path: Option<&str>,
+    format: OutputFormat,
+) -> Result<String> {
+    let cert = crypto::certificate::load(std::path::Path::new(cert_path))?;
+
+    let result = if let Some(doc_path) = document_path {
+        let doc_hash = crypto::hashing::sha256_file(doc_path)?;
+        crypto::verify::verify_against_document(&cert, &doc_hash)?
+    } else {
+        crypto::verify::verify(&cert)?
+    };
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&result)?),
+        _ => Ok(crypto::verify::render_text(&result)),
+    }
 }

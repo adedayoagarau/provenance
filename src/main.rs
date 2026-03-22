@@ -89,6 +89,47 @@ enum Commands {
         #[arg(long, default_value = "text")]
         format: String,
     },
+
+    /// Generate an Ed25519 signing keypair for certificate generation
+    GenerateKey {
+        /// Directory to save the keypair files
+        #[arg(short, long, default_value = ".")]
+        output: String,
+    },
+
+    /// Generate a tamper-evident Provenance certificate for a document
+    GenerateCertificate {
+        /// Path to the document to certify
+        #[arg(short, long)]
+        file: String,
+
+        /// Path to the Ed25519 signing key file
+        #[arg(short, long)]
+        key: String,
+
+        /// Path to an author profile to compare against (optional)
+        #[arg(short, long)]
+        profile: Option<String>,
+
+        /// Output path for the certificate (default: <filename>.provenance.json)
+        #[arg(short, long)]
+        output: Option<String>,
+    },
+
+    /// Verify a Provenance certificate's integrity and authenticity
+    VerifyCertificate {
+        /// Path to the certificate file
+        #[arg(short, long)]
+        certificate: String,
+
+        /// Path to the original document to verify against (optional)
+        #[arg(short, long)]
+        document: Option<String>,
+
+        /// Output format: text, json
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -131,6 +172,33 @@ fn main() -> anyhow::Result<()> {
             info!(file = %file, candidates = profiles.len(), "Ranking author candidates");
             let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
             let report = provenance::rank_candidates_with_format(&file, &profiles, output_format)?;
+            println!("{report}");
+        }
+        Commands::GenerateKey { output } => {
+            info!(output = %output, "Generating Ed25519 signing keypair");
+            let (private_path, public_path) = provenance::generate_signing_key(&output)?;
+            println!("Signing key saved: {private_path}");
+            println!("Public key saved:  {public_path}");
+            println!("\nKeep the signing key secure. Distribute the public key for verification.");
+        }
+        Commands::GenerateCertificate { file, key, profile, output } => {
+            info!(file = %file, "Generating Provenance certificate");
+            let cert_path = provenance::generate_certificate(
+                &file,
+                &key,
+                profile.as_deref(),
+                output.as_deref(),
+            )?;
+            println!("Certificate saved: {cert_path}");
+        }
+        Commands::VerifyCertificate { certificate, document, format } => {
+            info!(certificate = %certificate, "Verifying Provenance certificate");
+            let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
+            let report = provenance::verify_certificate(
+                &certificate,
+                document.as_deref(),
+                output_format,
+            )?;
             println!("{report}");
         }
     }
