@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Provenance Process Capture</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 16px; background: #fafafa; }
+    h2 { color: #1a1a2e; font-size: 16px; margin-bottom: 12px; }
+    .btn { display: block; width: 100%; padding: 10px; margin: 6px 0; border: none;
+           border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .btn-start { background: #2196F3; color: white; }
+    .btn-stop { background: #f44336; color: white; }
+    .btn-export { background: #4CAF50; color: white; }
+    .btn-stats { background: #FF9800; color: white; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #status { margin: 12px 0; padding: 8px; background: #e3f2fd; border-radius: 4px; font-size: 13px; }
+    #event-count { font-weight: bold; }
+    #stats-panel { margin-top: 12px; font-size: 12px; line-height: 1.5; background: white;
+                   padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
+    .footer { margin-top: 20px; font-size: 11px; color: #888; }
+  </style>
+</head>
+<body>
+  <h2>Provenance Process Capture</h2>
+
+  <button id="start-btn" class="btn btn-start">Start Capture</button>
+  <button id="stop-btn" class="btn btn-stop" disabled>Stop Capture</button>
+  <button id="export-btn" class="btn btn-export" disabled>Export Session</button>
+  <button id="stats-btn" class="btn btn-stats">View Stats</button>
+
+  <div id="status">Ready. Click 'Start Capture' to begin.</div>
+  <div>Events: <span id="event-count">0</span></div>
+  <div id="stats-panel"></div>
+
+  <div class="footer">
+    Provenance v1.0 — Process Capture for Word<br>
+    Import captured sessions: <code>provenance import-capture --file session.json</code>
+  </div>
+
+  <script src="taskpane.js"></script>
+</body>
+</html>

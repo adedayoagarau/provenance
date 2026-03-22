@@ -75,6 +75,12 @@ impl AuditTrail {
 }
 
 /// Format epoch seconds to ISO 8601 (approximate, no chrono dep).
+/// Public variant for use by other modules (e.g., certificate generation).
+pub fn format_epoch_public(secs: u64) -> String {
+    format_epoch(secs)
+}
+
+/// Format epoch seconds to ISO 8601 (approximate, no chrono dep).
 fn format_epoch(secs: u64) -> String {
     // Simple UTC date formatting without chrono
     let days = secs / 86400;

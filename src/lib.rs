@@ -12,6 +12,10 @@ pub mod crypto;
 pub mod utils;
 pub mod ml;
 pub mod data;
+pub mod capture;
+pub mod adversarial;
+pub mod api;
+pub mod enterprise;
 
 use scoring::engine::OutputFormat;
 use utils::errors::{ProvenanceError, Result};
@@ -179,7 +183,7 @@ fn run_batch_entry(
     file_path: &str,
     profile: Option<&identity::profile::AuthorProfile>,
 ) -> Result<BatchEntry> {
-    let forensic_report = forensics::examine(file_path)?;
+    let _forensic_report = forensics::examine(file_path)?;
     let text = extraction::extract_text(file_path)?;
     let analysis_result = analysis::analyze_text(&text)?;
 
@@ -560,4 +564,376 @@ fn render_docx_profile_text(
 pub fn run_forensics_with_format(file_path: &str, format: OutputFormat) -> Result<String> {
     // Delegate to full pipeline (forensics-only is now just analyze without profile)
     analyze_with_format(file_path, None, format)
+}
+
+/// Generate an Ed25519 signing keypair and save to files.
+pub fn generate_signing_key(output_dir: &str) -> Result<(String, String)> {
+    let dir = std::path::Path::new(output_dir);
+    std::fs::create_dir_all(dir).map_err(|e| utils::errors::ProvenanceError::IoWithPath {
+        path: output_dir.to_string(),
+        source: e,
+    })?;
+
+    let key = crypto::keys::generate_keypair();
+    let pub_info = crypto::keys::PublicKeyInfo::from_verifying_key(&key.verifying_key());
+
+    let private_path = dir.join("provenance_signing.key");
+    let public_path = dir.join("provenance_public.json");
+
+    crypto::keys::save_signing_key(&key, &private_path)?;
+    crypto::keys::save_public_key(&pub_info, &public_path)?;
+
+    Ok((
+        private_path.display().to_string(),
+        public_path.display().to_string(),
+    ))
+}
+
+/// Generate a Provenance certificate for an analyzed document.
+pub fn generate_certificate(
+    file_path: &str,
+    signing_key_path: &str,
+    profile_path: Option<&str>,
+    output_path: Option<&str>,
+) -> Result<String> {
+    let path = std::path::Path::new(file_path);
+    if !path.exists() {
+        return Err(utils::errors::ProvenanceError::FileNotFound {
+            path: file_path.to_string(),
+        });
+    }
+
+    // Load signing key
+    let signing_key =
+        crypto::keys::load_signing_key(std::path::Path::new(signing_key_path))?;
+
+    // Run full analysis
+    let forensic_report = forensics::examine(file_path)?;
+    let text = extraction::extract_text(file_path)?;
+    let analysis_result = analysis::analyze_text(&text)?;
+
+    let comparison = if let Some(profile) = profile_path {
+        let author_profile = identity::profile::load(profile)?;
+        Some(identity::comparison::compare(&analysis_result, &author_profile))
+    } else {
+        None
+    };
+
+    let register = analysis::register::classify(&analysis_result);
+    let baseline_report = analysis::baselines::compare(&analysis_result, &register.primary);
+
+    let docx_profile = if file_path.to_lowercase().ends_with(".docx") {
+        build_docx_profile(path).ok()
+    } else {
+        None
+    };
+
+    let acs = scoring::acs::compute(
+        docx_profile.as_ref(),
+        comparison.as_ref(),
+        Some(&baseline_report),
+    );
+    let pii_score = scoring::pii::compute(
+        forensic_report.metadata.document_metadata.as_ref().map(|_| &forensic_report.metadata),
+        docx_profile.as_ref(),
+    );
+    let anomaly_report = scoring::anomalies::collect_anomalies(
+        docx_profile.as_ref(),
+        Some(&baseline_report),
+    );
+
+    // Build certificate input
+    let construction_pattern_str = docx_profile.as_ref().map(|p| {
+        match p.construction_pattern {
+            forensics::docx::profile::ConstructionPattern::Organic => "Organic",
+            forensics::docx::profile::ConstructionPattern::BulkInsertion => "BulkInsertion",
+            forensics::docx::profile::ConstructionPattern::Hybrid => "Hybrid",
+            forensics::docx::profile::ConstructionPattern::Insufficient => "Insufficient",
+        }
+    });
+
+    let input = crypto::certificate::CertificateInput {
+        file_name: &forensic_report.metadata.file_name,
+        file_hash: &forensic_report.integrity.sha256,
+        file_size: forensic_report.integrity.file_size,
+        format: &format!("{:?}", forensic_report.format.detected_type),
+        word_count: analysis_result.lexical.total_words,
+        acs_score: acs.score,
+        acs_margin: acs.margin,
+        pii_score: pii_score.score,
+        pii_level: pii_score.level.label(),
+        register: &register.label,
+        anomaly_count: anomaly_report.flags.len(),
+        construction_pattern: construction_pattern_str,
+        has_docx_forensics: docx_profile.is_some(),
+        has_author_profile: comparison.is_some(),
+        rsid_session_count: docx_profile.as_ref().and_then(|p| {
+            p.rsid_analysis.as_ref().map(|r| r.unique_rsid_count)
+        }),
+        formatting_consistency: docx_profile.as_ref().and_then(|p| {
+            p.formatting_analysis.as_ref().map(|f| f.formatting_consistency_score)
+        }),
+    };
+
+    let cert = crypto::certificate::generate(&input, &signing_key)?;
+
+    // Determine output path
+    let cert_path = if let Some(out) = output_path {
+        std::path::PathBuf::from(out)
+    } else {
+        let stem = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("document");
+        std::path::PathBuf::from(format!("{stem}.provenance.json"))
+    };
+
+    crypto::certificate::save(&cert, &cert_path)?;
+    Ok(cert_path.display().to_string())
+}
+
+/// Verify a Provenance certificate.
+pub fn verify_certificate(
+    cert_path: &str,
+    document_path: Option<&str>,
+    format: OutputFormat,
+) -> Result<String> {
+    let cert = crypto::certificate::load(std::path::Path::new(cert_path))?;
+
+    let result = if let Some(doc_path) = document_path {
+        let doc_hash = crypto::hashing::sha256_file(doc_path)?;
+        crypto::verify::verify_against_document(&cert, &doc_hash)?
+    } else {
+        crypto::verify::verify(&cert)?
+    };
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&result)?),
+        _ => Ok(crypto::verify::render_text(&result)),
+    }
+}
+
+/// Import a capture session from a JSON file and compute process metrics.
+pub fn import_capture(session_path: &str, format: OutputFormat) -> Result<String> {
+    let path = std::path::Path::new(session_path);
+    let session = capture::session::load_session(path)?;
+    let metrics = capture::metrics::compute_session_metrics(&session);
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&metrics)?),
+        _ => Ok(render_process_metrics(&session, &metrics)),
+    }
+}
+
+/// Import all capture sessions from a directory and compute aggregate metrics.
+pub fn import_capture_dir(dir_path: &str, format: OutputFormat) -> Result<String> {
+    let path = std::path::Path::new(dir_path);
+    let sessions = capture::session::load_sessions_from_dir(path)?;
+
+    if sessions.is_empty() {
+        return Err(utils::errors::ProvenanceError::ProfileError {
+            reason: format!("No capture sessions found in '{dir_path}'"),
+        });
+    }
+
+    let doc_name = sessions
+        .first()
+        .map(|s| s.document_name.clone())
+        .unwrap_or_else(|| "unknown".into());
+
+    let history = capture::session::build_history(&doc_name, sessions);
+    let metrics = capture::metrics::compute_history_metrics(&history);
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&metrics)?),
+        _ => Ok(render_history_metrics(&history, &metrics)),
+    }
+}
+
+fn render_process_metrics(
+    session: &capture::session::CaptureSession,
+    metrics: &capture::metrics::ProcessMetrics,
+) -> String {
+    let mut out = String::new();
+
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  PROCESS CAPTURE ANALYSIS\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+
+    out.push_str(&format!("  Document:  {}\n", session.document_name));
+    out.push_str(&format!("  Source:    {}\n", session.source.label()));
+    out.push_str(&format!("  Session:   {}\n", session.session_id));
+    out.push_str(&format!("  Events:    {}\n\n", session.event_count()));
+
+    render_metrics_body(&mut out, metrics);
+    out
+}
+
+fn render_history_metrics(
+    history: &capture::session::CaptureHistory,
+    metrics: &capture::metrics::ProcessMetrics,
+) -> String {
+    let mut out = String::new();
+
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  PROCESS CAPTURE ANALYSIS — Aggregate\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+
+    out.push_str(&format!("  Document:  {}\n", history.document_name));
+    out.push_str(&format!("  Sessions:  {}\n", history.sessions.len()));
+    out.push_str(&format!("  Events:    {}\n\n", history.summary.total_events));
+
+    render_metrics_body(&mut out, metrics);
+    out
+}
+
+fn render_metrics_body(out: &mut String, metrics: &capture::metrics::ProcessMetrics) {
+    out.push_str("── Writing Time ──\n");
+    out.push_str(&format!("  Total:      {:.1} minutes\n", metrics.total_writing_minutes));
+    out.push_str(&format!("  Sessions:   {}\n", metrics.session_count));
+    out.push_str(&format!("  Avg session: {:.1} minutes\n\n", metrics.avg_session_minutes));
+
+    out.push_str("── Content ──\n");
+    out.push_str(&format!("  Typing speed: {:.0} CPM\n", metrics.typing_speed_cpm));
+    out.push_str(&format!("  Paste ratio:  {:.1}%\n", metrics.paste_ratio * 100.0));
+    out.push_str(&format!("  Paste events: {}\n", metrics.paste_event_count));
+    out.push_str(&format!("  Largest paste: {} chars\n", metrics.largest_paste_chars));
+    out.push_str(&format!("  AI suggestions accepted: {}\n", metrics.ai_suggestions_accepted));
+    out.push_str(&format!("  AI content ratio: {:.1}%\n\n", metrics.ai_content_ratio * 100.0));
+
+    out.push_str("── Revision ──\n");
+    out.push_str(&format!("  Undo rate:    {:.1} per 1000 chars\n", metrics.undo_rate));
+    out.push_str(&format!("  Revision intensity: {:.1} per 1000 chars\n", metrics.revision_intensity));
+    out.push_str(&format!("  Focus losses/hour: {:.1}\n\n", metrics.focus_loss_per_hour));
+
+    if let Some(ref timing) = metrics.keystroke_timing {
+        out.push_str("── Keystroke Timing ──\n");
+        out.push_str(&format!("  Mean IKI:    {:.0} ms\n", timing.mean_iki_ms));
+        out.push_str(&format!("  Median IKI:  {:.0} ms\n", timing.median_iki_ms));
+        out.push_str(&format!("  StdDev IKI:  {:.0} ms\n", timing.stddev_iki_ms));
+        out.push_str(&format!("  CV:          {:.2}\n", timing.cv_iki));
+        out.push_str(&format!("  Fast (<50ms): {:.1}%\n", timing.fast_interval_ratio * 100.0));
+        out.push_str(&format!("  Pauses (>5s): {:.1}%\n\n", timing.pause_ratio * 100.0));
+    }
+
+    out.push_str(&format!("  Capture confidence: {:.0}%\n\n", metrics.capture_confidence * 100.0));
+
+    if !metrics.flags.is_empty() {
+        out.push_str("── Process Flags ──\n");
+        for flag in &metrics.flags {
+            let sev = match flag.severity {
+                capture::metrics::ProcessFlagSeverity::Low => "LOW",
+                capture::metrics::ProcessFlagSeverity::Medium => "MEDIUM",
+                capture::metrics::ProcessFlagSeverity::High => "HIGH",
+            };
+            out.push_str(&format!("  [{sev}] {}\n", flag.description));
+        }
+    }
+}
+
+/// Run adversarial robustness assessment and generate report.
+pub fn adversarial_report(format: OutputFormat) -> Result<String> {
+    let report = adversarial::accuracy::generate_template_report();
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&report)?),
+        _ => Ok(adversarial::accuracy::render_text(&report)),
+    }
+}
+
+/// Run humanizer detection on a document.
+pub fn detect_humanizer(file_path: &str, format: OutputFormat) -> Result<String> {
+    let text = extraction::extract_text(file_path)?;
+    let result = adversarial::humanizer::detect_humanizer(&text);
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&result)?),
+        _ => Ok(render_humanizer_result(&result)),
+    }
+}
+
+fn render_humanizer_result(result: &adversarial::humanizer::HumanizerDetectionResult) -> String {
+    let mut out = String::new();
+
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  HUMANIZER DETECTION ANALYSIS\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+
+    let status = if result.detected { "DETECTED" } else { "NOT DETECTED" };
+    out.push_str(&format!("  Status:     {status}\n"));
+    out.push_str(&format!("  Confidence: {:.0}%\n", result.confidence * 100.0));
+
+    if let Some(ref tool) = result.suspected_tool {
+        out.push_str(&format!("  Suspected:  {}\n", tool.label()));
+    }
+    out.push('\n');
+
+    out.push_str("── Indicators ──\n");
+    for indicator in &result.indicators {
+        let bar_len = (indicator.score * 20.0) as usize;
+        let bar: String = "█".repeat(bar_len) + &"░".repeat(20 - bar_len);
+        out.push_str(&format!(
+            "  {bar} {:.0}% — {}\n",
+            indicator.score * 100.0,
+            indicator.name,
+        ));
+        out.push_str(&format!("    {}\n", indicator.description));
+    }
+    out.push('\n');
+
+    out.push_str("── Assessment ──\n");
+    out.push_str(&format!("  {}\n", result.assessment));
+
+    out
+}
+
+/// Generate a bias audit template report.
+pub fn bias_audit_report(format: OutputFormat) -> Result<String> {
+    let report = adversarial::bias::generate_audit_template();
+
+    match format {
+        OutputFormat::Json => Ok(serde_json::to_string_pretty(&report)?),
+        _ => Ok(render_bias_audit(&report)),
+    }
+}
+
+fn render_bias_audit(report: &adversarial::bias::BiasAuditReport) -> String {
+    let mut out = String::new();
+
+    out.push_str("═══════════════════════════════════════════════════════\n");
+    out.push_str("  PROVENANCE BIAS AUDIT\n");
+    out.push_str("═══════════════════════════════════════════════════════\n\n");
+
+    out.push_str(&format!("  Date:    {}\n", report.audit_date));
+    out.push_str(&format!("  Version: {}\n", report.software_version));
+    out.push_str(&format!("  Groups:  {}\n\n", report.groups_tested.len()));
+
+    out.push_str("── Population Groups ──\n");
+    let mut by_category: std::collections::HashMap<&str, Vec<&str>> = std::collections::HashMap::new();
+    for group in &report.groups_tested {
+        by_category
+            .entry(group.category.label())
+            .or_default()
+            .push(&group.name);
+    }
+    for (category, groups) in &by_category {
+        out.push_str(&format!("  {category}:\n"));
+        for group in groups {
+            out.push_str(&format!("    • {group}\n"));
+        }
+    }
+    out.push('\n');
+
+    out.push_str("── Documented Limitations ──\n");
+    for failure in &report.documented_failures {
+        out.push_str(&format!("  [{severity}] {desc}\n", severity = failure.severity.to_uppercase(), desc = failure.description));
+        out.push_str(&format!("    Mitigation: {}\n\n", failure.mitigation));
+    }
+
+    out.push_str("── Notes ──\n");
+    for limitation in &report.limitations {
+        out.push_str(&format!("  • {limitation}\n"));
+    }
+
+    out
 }

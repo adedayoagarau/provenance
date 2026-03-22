@@ -16,6 +16,9 @@ csv = "1"
 
 # Crypto
 sha2 = "0.10"
+ed25519-dalek = { version = "2", features = ["rand_core", "serde"] }
+rand = "0.8"
+base64 = "0.22"
 
 # NLP
 rust-stemmers = "1.2"
@@ -59,10 +62,18 @@ toml = "0.8"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
+# API Server (optional)
+axum = { version = "0.7", optional = true }
+tokio = { version = "1", features = ["full"], optional = true }
+tower = { version = "0.5", optional = true }
+tower-http = { version = "0.6", features = ["cors", "trace", "limit"], optional = true }
+uuid = { version = "1", features = ["v4"], optional = true }
+
 [features]
 default = []
 linfa = ["dep:linfa", "dep:linfa-svm", "dep:linfa-logistic"]
 onnx = ["dep:ort"]
+server = ["dep:axum", "dep:tokio", "dep:tower", "dep:tower-http", "dep:uuid"]
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }

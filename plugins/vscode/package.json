@@ -1,0 +1,58 @@
+{
+  "name": "provenance-capture",
+  "displayName": "Provenance Process Capture",
+  "description": "Captures writing process events for authorship verification",
+  "version": "1.0.0",
+  "publisher": "provenance",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onLanguage:plaintext",
+    "onLanguage:latex",
+    "onLanguage:restructuredtext"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "provenance.startCapture",
+        "title": "Provenance: Start Capture"
+      },
+      {
+        "command": "provenance.stopCapture",
+        "title": "Provenance: Stop Capture"
+      },
+      {
+        "command": "provenance.exportSession",
+        "title": "Provenance: Export Capture Session"
+      },
+      {
+        "command": "provenance.showStats",
+        "title": "Provenance: Show Capture Statistics"
+      }
+    ],
+    "configuration": {
+      "title": "Provenance Process Capture",
+      "properties": {
+        "provenance.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start capture when opening supported files"
+        },
+        "provenance.captureLanguages": {
+          "type": "array",
+          "default": ["markdown", "plaintext", "latex"],
+          "description": "Language IDs for which to enable capture"
+        },
+        "provenance.outputDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Directory for exported capture sessions (default: workspace root)"
+        }
+      }
+    }
+  }
+}
