@@ -225,25 +225,25 @@
 
 ---
 
-## Phase 5: Data Pipeline & Datasets
+## Phase 5: Data Pipeline & Datasets ✓
 
-### 5.1 Dataset collection framework
-- [ ] `data/README.md` — dataset documentation
-- [ ] Script to download PAN competition datasets
-- [ ] Script to process Project Gutenberg texts
-- [ ] Data format spec (one dir per author, text files within)
+### 5.1 Dataset collection framework ✓
+- [x] `data/README.md` — dataset documentation
+- [x] Script to download PAN competition datasets (`data/scripts/download_pan.py`)
+- [x] Script to process Project Gutenberg texts (integrated in download_pan.py)
+- [x] Data format spec (one dir per author, text files within)
 
-### 5.2 Data preprocessing
-- [ ] Corpus loading and indexing
-- [ ] Deduplication
-- [ ] Train/validation/test split utilities
-- [ ] Data quality scoring (min words, encoding)
-- [ ] **Files**: `src/data/mod.rs`, `src/data/corpus.rs`
+### 5.2 Data preprocessing ✓
+- [x] Corpus loading and indexing
+- [x] Deduplication (SHA-256 hash-based)
+- [x] Train/validation/test split utilities (stratified)
+- [x] Data quality scoring (word count, character diversity, sentence count)
+- [x] **Files**: `src/data/mod.rs`, `src/data/corpus.rs`, `src/data/split.rs`
 
-### 5.3 Benchmark datasets
-- [ ] Small built-in benchmark (5 authors, 10 texts each)
-- [ ] Store in `tests/fixtures/benchmark/`
-- [ ] Automated benchmark runner
+### 5.3 Benchmark datasets ✓
+- [x] Small built-in benchmark (5 authors, 10 texts each)
+- [x] Store in `tests/fixtures/benchmark/`
+- [x] Automated benchmark runner (`tests/test_benchmark.rs`)
 
 ---
 

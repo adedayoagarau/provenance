@@ -163,11 +163,13 @@ impl CorpusStats {
         let n = vectors.len() as f64;
         let names = vectors[0].names.clone();
 
-        // Compute means
+        // Compute means (guard against different-length vectors)
         let mut means = vec![0.0; dim];
         for v in vectors {
             for (i, &val) in v.values.iter().enumerate() {
-                means[i] += val;
+                if i < dim {
+                    means[i] += val;
+                }
             }
         }
         for m in &mut means {
@@ -178,8 +180,10 @@ impl CorpusStats {
         let mut stds = vec![0.0; dim];
         for v in vectors {
             for (i, &val) in v.values.iter().enumerate() {
-                let diff = val - means[i];
-                stds[i] += diff * diff;
+                if i < dim {
+                    let diff = val - means[i];
+                    stds[i] += diff * diff;
+                }
             }
         }
         for s in &mut stds {

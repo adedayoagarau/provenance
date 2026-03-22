@@ -11,6 +11,7 @@ pub mod scoring;
 pub mod crypto;
 pub mod utils;
 pub mod ml;
+pub mod data;
 
 use utils::errors::{ProvenanceError, Result};
 

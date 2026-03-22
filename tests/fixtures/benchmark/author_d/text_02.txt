@@ -1,0 +1,5 @@
+The Maillard reaction (not to be confused with caramelization, which involves only sugars) occurs between amino acids and reducing sugars at temperatures typically exceeding 140 degrees Celsius. This non-enzymatic browning process is responsible for the characteristic flavors of seared meat, toasted bread, and roasted coffee. The reaction produces hundreds of distinct flavor compounds, the specific profile depending on the amino acids and sugars present.
+
+Emulsification represents another fundamental cooking process. An emulsion (a stable mixture of two otherwise immiscible liquids) requires both mechanical energy and an emulsifying agent. In mayonnaise, lecithin from egg yolk serves this function, stabilizing the dispersion of oil droplets within the aqueous phase. The ratio of oil to aqueous phase is critical; exceeding approximately seventy-five percent oil by volume risks phase inversion and structural collapse.
+
+Precision in thermal management distinguishes competent cooking from guesswork. Sous vide techniques exploit this principle directly, maintaining water temperature within plus or minus 0.5 degrees Celsius to achieve reproducible results.
