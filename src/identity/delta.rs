@@ -1,4 +1,5 @@
 use ndarray::Array1;
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use super::features::{CorpusStats, FeatureVector};
@@ -105,7 +106,7 @@ pub fn rank_candidates(
     let query_z = corpus.normalize(query);
 
     let mut results: Vec<(String, DeltaResult)> = candidates
-        .iter()
+        .par_iter()
         .map(|(name, candidate)| {
             let candidate_z = corpus.normalize(candidate);
             let delta = compute_delta(&query_z, &candidate_z);

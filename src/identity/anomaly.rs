@@ -6,6 +6,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use rayon::prelude::*;
+
 use crate::analysis::{self, AnalysisResult};
 use crate::identity::features::{extract, FeatureSet, FeatureVector};
 
@@ -82,22 +84,28 @@ pub fn sliding_window_analysis(text: &str, config: &WindowConfig) -> WindowAnaly
         return single_window_analysis(text, &words);
     }
 
-    // Extract windows
-    let mut window_features = Vec::new();
-    let mut window_ranges = Vec::new();
+    // Collect window ranges
+    let mut all_ranges = Vec::new();
     let mut pos = 0;
-
     while pos + config.window_size <= words.len() {
-        let window_text: String = words[pos..pos + config.window_size].join(" ");
-
-        if let Ok(analysis) = analysis::analyze_text(&window_text) {
-            let features = extract(&analysis, config.feature_set);
-            window_features.push(features);
-            window_ranges.push((pos, pos + config.window_size));
-        }
-
+        all_ranges.push((pos, pos + config.window_size));
         pos += config.slide_step;
     }
+
+    // Extract features for all windows in parallel
+    let feature_set = config.feature_set;
+    let window_results: Vec<_> = all_ranges
+        .par_iter()
+        .filter_map(|&(start, end)| {
+            let window_text: String = words[start..end].join(" ");
+            analysis::analyze_text(&window_text).ok().map(|a| {
+                (extract(&a, feature_set), (start, end))
+            })
+        })
+        .collect();
+
+    let (window_features, window_ranges): (Vec<_>, Vec<_>) =
+        window_results.into_iter().unzip();
 
     if window_features.is_empty() {
         return WindowAnalysis {

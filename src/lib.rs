@@ -56,6 +56,8 @@ pub fn analyze_with_format(
 
 /// Build an author profile from verified writing samples.
 pub fn build_profile(samples_dir: &str, name: &str) -> Result<String> {
+    use rayon::prelude::*;
+
     let samples = extraction::collect_samples(samples_dir)?;
     if samples.is_empty() {
         return Err(ProvenanceError::ProfileError {
@@ -63,12 +65,13 @@ pub fn build_profile(samples_dir: &str, name: &str) -> Result<String> {
         });
     }
 
-    let mut analyses = Vec::new();
-    for sample in &samples {
-        let text = extraction::extract_text(sample)?;
-        let result = analysis::analyze_text(&text)?;
-        analyses.push(result);
-    }
+    let analyses: Vec<_> = samples
+        .par_iter()
+        .map(|sample| {
+            let text = extraction::extract_text(sample)?;
+            analysis::analyze_text(&text)
+        })
+        .collect::<Result<Vec<_>>>()?;
 
     let profile = identity::profile::build(name, &analyses)?;
     let path = identity::profile::save(&profile)?;

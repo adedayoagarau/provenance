@@ -18,14 +18,20 @@ pub struct AnalysisResult {
     pub ngrams: ngrams::NgramProfile,
 }
 
-/// Run all analysis layers on the given text.
+/// Run all analysis layers on the given text in parallel using rayon.
 pub fn analyze_text(text: &str) -> crate::utils::errors::Result<AnalysisResult> {
-    let lexical = lexical::analyze(text);
-    let syntactic = syntactic::analyze(text);
-    let semantic = semantic::analyze(text);
-    let stylometric = stylometric::analyze(text);
-    let function_words = function_words::analyze(text);
-    let ngrams = ngrams::analyze(text);
+    let (
+        (lexical, syntactic),
+        ((semantic, stylometric), (function_words, ngrams)),
+    ) = rayon::join(
+        || rayon::join(|| lexical::analyze(text), || syntactic::analyze(text)),
+        || {
+            rayon::join(
+                || rayon::join(|| semantic::analyze(text), || stylometric::analyze(text)),
+                || rayon::join(|| function_words::analyze(text), || ngrams::analyze(text)),
+            )
+        },
+    );
 
     Ok(AnalysisResult {
         lexical,

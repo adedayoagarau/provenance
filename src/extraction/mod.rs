@@ -14,6 +14,13 @@ use crate::forensics::format::FileType;
 use crate::utils::errors::{ProvenanceError, Result};
 use std::path::Path;
 
+/// Memory-map a file for efficient reading. Falls back to regular read on failure.
+fn mmap_file(path: &Path) -> std::result::Result<memmap2::Mmap, std::io::Error> {
+    let file = std::fs::File::open(path)?;
+    // SAFETY: We only read the file and do not assume exclusive access.
+    unsafe { memmap2::MmapOptions::new().map(&file) }
+}
+
 /// Extract plain text from a file, auto-detecting format.
 ///
 /// Supports: TXT, Markdown, HTML, PDF, DOCX, RTF, ODT, EPUB, EML, MBOX,
@@ -76,9 +83,12 @@ pub fn collect_samples(dir: &str) -> Result<Vec<String>> {
 }
 
 /// Detect file type using magic bytes and extension.
+///
+/// Uses memory-mapped I/O for efficient reading of file headers without
+/// loading the entire file into memory.
 fn detect_type(path: &Path) -> FileType {
-    // Try magic bytes first
-    if let Ok(bytes) = std::fs::read(path) {
+    // Try magic bytes first, using mmap for efficiency on large files
+    if let Ok(bytes) = mmap_file(path) {
         if bytes.len() >= 4 {
             // PDF: starts with %PDF
             if bytes.starts_with(b"%PDF") {
