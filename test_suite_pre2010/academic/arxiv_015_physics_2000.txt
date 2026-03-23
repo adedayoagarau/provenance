@@ -1,0 +1,3 @@
+Atomic micromotion and geometric forces in a triaxial magnetic trap
+
+Non-adiabatic motion of Bose-Einstein condensates of rubidium atoms arising from the dynamical nature of a time-orbiting-potential (TOP) trap was observed experimentally. The orbital micromotion of the condensate in velocity space at the frequency of the rotating bias field of the TOP was detected by a time-of-flight method. A dependence of the equilibrium position of the atoms on the sense of rotation of the bias field was observed. We have compared our experimental findings with numerical simulations. The nonadiabatic following of the atomic spin in the trap rotating magnetic field produces geometric forces acting on the trapped atoms.

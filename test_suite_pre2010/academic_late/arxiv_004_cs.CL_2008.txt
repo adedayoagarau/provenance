@@ -1,0 +1,3 @@
+Text as Statistical Mechanics Object
+
+In this article we present a model of human written text based on statistical mechanics approach by deriving the potential energy for different parts of the text using large text corpus. We have checked the results numerically and found that the specific heat parameter effectively separates the closed class words from the specific terms used in the text.

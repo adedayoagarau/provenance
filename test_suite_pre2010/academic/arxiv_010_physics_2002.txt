@@ -1,0 +1,3 @@
+Application of Padé interpolation to stationary state problems
+
+If the small and large coupling behavior of a physical system can be computed perturbatively and expressed respectively as power series in a coupling parameter $g$ and $1/g$, a Padé approximant embracing the two series can interpolate between these two limits and provide an accurate estimate of the system's behavior in the generally intractable intermediate coupling regime. The methodology and validity of this approach are illustrated by considering several stationary state problems in quantum mechanics.

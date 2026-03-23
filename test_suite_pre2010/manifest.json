@@ -1,0 +1,110 @@
+{
+  "total": 80,
+  "categories": {
+    "academic": {
+      "count": 31,
+      "files": [
+        "arxiv_001_cs.AI_2000.txt",
+        "arxiv_002_cs.AI_2000.txt",
+        "arxiv_003_cs.AI_2000.txt",
+        "arxiv_004_cs.AI_2000.txt",
+        "arxiv_005_cs.AI_2000.txt",
+        "arxiv_006_cs.AI_2000.txt",
+        "arxiv_007_cs.AI_2000.txt",
+        "arxiv_008_cs.AI_2000.txt",
+        "arxiv_009_physics_2000.txt",
+        "arxiv_010_physics_2002.txt",
+        "arxiv_011_physics_2001.txt",
+        "arxiv_012_physics_2003.txt",
+        "arxiv_013_physics_2000.txt",
+        "arxiv_014_physics_2003.txt",
+        "arxiv_015_physics_2000.txt",
+        "arxiv_016_physics_2001.txt",
+        "arxiv_017_math_2001.txt",
+        "arxiv_018_math_2003.txt",
+        "arxiv_019_math_2003.txt",
+        "arxiv_020_math_2003.txt",
+        "arxiv_021_math_2003.txt",
+        "arxiv_022_math_2003.txt",
+        "arxiv_023_math_2003.txt",
+        "arxiv_024_astro_2000.txt",
+        "arxiv_025_astro_2003.txt",
+        "arxiv_026_astro_2003.txt",
+        "arxiv_027_astro_2003.txt",
+        "arxiv_028_astro_2003.txt",
+        "arxiv_029_astro_2002.txt",
+        "arxiv_030_astro_2002.txt",
+        "arxiv_031_astro_2001.txt"
+      ]
+    },
+    "academic_late": {
+      "count": 20,
+      "files": [
+        "arxiv_001_cs.CL_2008.txt",
+        "arxiv_002_cs.CL_2008.txt",
+        "arxiv_003_cs.CL_2008.txt",
+        "arxiv_004_cs.CL_2008.txt",
+        "arxiv_005_cs.CL_2008.txt",
+        "arxiv_006_cs.CL_2008.txt",
+        "arxiv_007_cs.CL_2008.txt",
+        "arxiv_008_cs.CL_2009.txt",
+        "arxiv_009_cs.CL_2009.txt",
+        "arxiv_010_cs.CL_2009.txt",
+        "arxiv_011_cs.LG_2008.txt",
+        "arxiv_012_cs.LG_2008.txt",
+        "arxiv_013_cs.LG_2008.txt",
+        "arxiv_014_cs.LG_2008.txt",
+        "arxiv_015_cs.LG_2008.txt",
+        "arxiv_016_cs.LG_2008.txt",
+        "arxiv_017_cs.LG_2008.txt",
+        "arxiv_018_cs.LG_2008.txt",
+        "arxiv_019_cs.LG_2008.txt",
+        "arxiv_020_cs.LG_2009.txt"
+      ]
+    },
+    "literary": {
+      "count": 14,
+      "files": [
+        "gutenberg_001_pg11.txt",
+        "gutenberg_002_pg1661.txt",
+        "gutenberg_003_pg84.txt",
+        "gutenberg_004_pg98.txt",
+        "gutenberg_005_pg76.txt",
+        "gutenberg_006_pg2701.txt",
+        "gutenberg_007_pg1400.txt",
+        "gutenberg_008_pg174.txt",
+        "gutenberg_009_pg16.txt",
+        "gutenberg_010_pg345.txt",
+        "gutenberg_011_pg1952.txt",
+        "gutenberg_012_pg2591.txt",
+        "gutenberg_013_pg1080.txt",
+        "gutenberg_014_pg120.txt"
+      ]
+    },
+    "political": {
+      "count": 8,
+      "files": [
+        "gutenberg_001_pg1497.txt",
+        "gutenberg_002_pg3207.txt",
+        "gutenberg_003_pg7370.txt",
+        "gutenberg_004_pg5.txt",
+        "gutenberg_005_pg1404.txt",
+        "gutenberg_006_pg1228.txt",
+        "gutenberg_007_pg815.txt",
+        "gutenberg_008_pg4363.txt"
+      ]
+    },
+    "scientific": {
+      "count": 7,
+      "files": [
+        "gutenberg_001_pg28054.txt",
+        "gutenberg_002_pg14725.txt",
+        "gutenberg_003_pg3300.txt",
+        "gutenberg_004_pg4217.txt",
+        "gutenberg_005_pg22381.txt",
+        "gutenberg_006_pg33504.txt",
+        "gutenberg_007_pg10616.txt"
+      ]
+    }
+  }
+}

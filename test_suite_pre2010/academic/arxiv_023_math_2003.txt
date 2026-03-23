@@ -1,0 +1,3 @@
+Divide-and-conquer generating functions. Part I. Elementary sequences
+
+Divide-and-conquer functions satisfy equations in F(z),F(z^2),F(z^4)... Their generated sequences are mainly used in computer science, and they were analyzed pragmatically, that is, now and then a sequence was picked out for scrutiny. By giving several classes of ordinary generating functions together with recurrences, we hope to help with the analysis of many such sequences, and try to classify a part of the divide-and-conquer sequence zoo.

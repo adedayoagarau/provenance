@@ -1,0 +1,3 @@
+The displacement and split decompositions for a $Q$-polynomial distance-regular graph
+
+Let $Γ$ denote a $Q$-polynomial distance-regular graph with diameter at least three and standard module $V$. We introduce two direct sum decompositions of $V$. We call these the displacement decomposition for $Γ$ and the split decomposition for $Γ$. We describe how these decompositions are related.

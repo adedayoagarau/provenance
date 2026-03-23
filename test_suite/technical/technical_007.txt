@@ -1,0 +1,3 @@
+Code Review Guidelines
+
+All pull requests must receive at least two approvals before merging. Reviewers should evaluate code for correctness, readability, performance implications, security vulnerabilities, and adherence to the team style guide. Comments should be constructive and specific, referencing line numbers and suggesting concrete alternatives where possible. Blocking comments must be prefixed with BLOCKING and include a clear explanation of why the change cannot be merged as-is. Non-blocking suggestions should be prefixed with NIT or SUGGESTION. Authors are expected to respond to all comments within one business day.

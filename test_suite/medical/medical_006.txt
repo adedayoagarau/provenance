@@ -1,0 +1,3 @@
+Discharge Summary
+
+The patient is a 67-year-old female admitted for community-acquired pneumonia. She presented with five days of productive cough, fever to 39.2 degrees Celsius, and progressive dyspnea. Chest radiograph on admission showed right lower lobe consolidation. Blood cultures were negative. Sputum culture grew Streptococcus pneumoniae sensitive to penicillin. She was treated with intravenous ceftriaxone for 48 hours followed by oral amoxicillin-clavulanate. Oxygen requirements peaked at 3 liters per minute nasal cannula on hospital day 2 and were weaned to room air by hospital day 4. She is discharged in stable condition on hospital day 5 with a prescription for oral amoxicillin-clavulanate 875/125mg twice daily for an additional 5 days.

@@ -1,0 +1,3 @@
+A two-streams discrete ordinates solution of radiative transfer in 1-D spherical geometry
+
+The analytic solution for the two-streams discrete ordinates equations is carried out on the spatial domain in one-dimensional spherical geometry. The solution satisfies all the physical and the geometric conditions, namely: the natural boundary condition at the surface of the sphere, the symmetry condition at the center and the reciprocity of path. The solution obeys the inverse square law and is finite everywhere in the sphere except at the center. Graphical and numerical data obtained in cold absorbing spheres confirmed the analytical predictions. The conservation of energy is satisfied with high accuracy within round-off errors.

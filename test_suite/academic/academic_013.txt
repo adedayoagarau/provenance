@@ -1,0 +1,3 @@
+A Short Proof of Jacobi's Formula for the Number of Representations of an Integer as a Sum of Four Squares
+
+A short and elementary proof, and a finite-form generalization, are given of Jacobi's formula for the number of ways of writing an integer as a sum of four squares (that implies Lagrange's famous 1777 theorem.)

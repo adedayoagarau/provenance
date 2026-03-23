@@ -1,0 +1,3 @@
+Data Mining in Astronomical Databases
+
+A Virtual Observatory (VO) will enable transparent and efficient access, search, retrieval, and visualization of data across multiple data repositories, which are generally heterogeneous and distributed. Aspects of data mining that apply to a variety of science user scenarios with a VO are reviewed.

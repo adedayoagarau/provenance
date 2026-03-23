@@ -1,0 +1,3 @@
+Troubleshooting Guide - Network Issues
+
+If the application returns ETIMEDOUT errors, first verify DNS resolution by running nslookup against the target hostname. If DNS resolves correctly, check network connectivity using traceroute to identify where packets are being dropped. Common causes include: misconfigured security groups blocking outbound traffic on port 443, expired TLS certificates causing handshake failures, and NAT gateway throttling under high connection volume. For intermittent timeouts, enable TCP keepalive with a 60-second interval and check for connection pool exhaustion in the application logs.

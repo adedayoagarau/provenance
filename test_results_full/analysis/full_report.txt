@@ -1,0 +1,918 @@
+PROVENANCE 109-DOCUMENT TEST SUITE REPORT
+============================================================
+
+Total documents: 109
+Categories: 10
+
+
+==================================================
+CATEGORY: ACADEMIC
+==================================================
+
+  academic_001
+    Register: Academic / Legal (0.783)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 82  TTR: 0.78  Formality: 0.747
+    FK Grade: 17.66  Passive: 0.333  AvgSentLen: 27.0
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/2L
+
+  academic_002
+    Register: Technical / Documentation (0.515)
+    ACS: 35.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 134  TTR: 0.649  Formality: 0.675
+    FK Grade: 23.45  Passive: 0.0  AvgSentLen: 32.75
+    Signals: 1exp/5aty/3ano
+    Anomalies: 0H/1M/2L
+
+  academic_003
+    Register: Academic / General (0.549)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 177  TTR: 0.588  Formality: 0.405
+    FK Grade: 13.31  Passive: 0.25  AvgSentLen: 21.75
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  academic_004
+    Register: Academic / Humanities (0.718)
+    ACS: 57.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 181  TTR: 0.619  Formality: 0.587
+    FK Grade: 13.18  Passive: 0.333  AvgSentLen: 20.33
+    Signals: 5exp/1aty/3ano
+    Anomalies: 0H/1M/2L
+
+  academic_005
+    Register: Technical / Documentation (0.716)
+    ACS: 64.4 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 203  TTR: 0.571  Formality: 0.454
+    FK Grade: 10.16  Passive: 0.0  AvgSentLen: 12.19
+    Signals: 5exp/3aty/1ano
+    Anomalies: 0H/0M/0L
+
+  academic_006
+    Register: Academic / General (0.729)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 177  TTR: 0.638  Formality: 0.651
+    FK Grade: 7.81  Passive: 0.222  AvgSentLen: 18.22
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  academic_007
+    Register: Academic / Legal (0.828)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 60  TTR: 0.65  Formality: 0.738
+    FK Grade: 18.92  Passive: 1.0  AvgSentLen: 28.5
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/2L
+
+  academic_008
+    Register: Technical / Documentation (0.516)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 128  TTR: 0.641  Formality: 0.711
+    FK Grade: 19.84  Passive: 0.0  AvgSentLen: 31.75
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/2L
+
+  academic_009
+    Register: Technical / Documentation (0.534)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 107  TTR: 0.645  Formality: 0.764
+    FK Grade: 8.88  Passive: 0.5  AvgSentLen: 16.67
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/1L
+
+  academic_010
+    Register: Academic / Legal (0.623)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 102  TTR: 0.608  Formality: 0.92
+    FK Grade: 17.24  Passive: 1.0  AvgSentLen: 20.4
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/2L
+
+  academic_011
+    Register: Academic / General (0.619)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 82  TTR: 0.744  Formality: 0.653
+    FK Grade: 13.49  Passive: 0.0  AvgSentLen: 25.67
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  academic_012
+    Register: Academic / Legal (0.95)
+    ACS: 61.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 112  TTR: 0.714  Formality: 0.769
+    FK Grade: 15.98  Passive: 0.5  AvgSentLen: 28.0
+    Signals: 5exp/2aty/2ano
+    Anomalies: 0H/0M/2L
+
+  academic_013
+    Register: Academic / Legal (0.95)
+    ACS: 37.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 56  TTR: 0.554  Formality: 0.75
+    FK Grade: 25.85  Passive: 1.0  AvgSentLen: 55.0
+    Signals: 2exp/3aty/4ano
+    Anomalies: 0H/1M/4L
+
+  academic_014
+    Register: Academic / General (0.552)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 52  TTR: 0.731  Formality: 0.616
+    FK Grade: 14.52  Passive: 0.0  AvgSentLen: 25.5
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/0L
+
+  academic_015
+    Register: Academic / Legal (0.95)
+    ACS: 66.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 135  TTR: 0.689  Formality: 0.786
+    FK Grade: 16.18  Passive: 0.4  AvgSentLen: 26.8
+    Signals: 6exp/1aty/2ano
+    Anomalies: 0H/0M/2L
+
+  academic_016
+    Register: Academic / Legal (0.95)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 99  TTR: 0.657  Formality: 0.833
+    FK Grade: 17.19  Passive: 0.333  AvgSentLen: 32.33
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/2L
+
+  academic_017
+    Register: Academic / General (0.582)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 74  TTR: 0.676  Formality: 0.644
+    FK Grade: 12.04  Passive: 0.5  AvgSentLen: 18.5
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/2L
+
+  academic_018
+    Register: Academic / Legal (0.91)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 213  TTR: 0.629  Formality: 0.798
+    FK Grade: 18.33  Passive: 0.286  AvgSentLen: 30.43
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  academic_019
+    Register: Academic / Legal (0.886)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 82  TTR: 0.744  Formality: 0.684
+    FK Grade: 15.65  Passive: 0.333  AvgSentLen: 26.67
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/2L
+
+==================================================
+CATEGORY: LITERARY
+==================================================
+
+  literary_001
+    Register: Academic / General (0.617)
+    ACS: 28.9 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 117  TTR: 0.735  Formality: 0.457
+    FK Grade: 22.96  Passive: 0.0  AvgSentLen: 58.5
+    Signals: 1exp/3aty/5ano
+    Anomalies: 0H/1M/3L
+
+  literary_002
+    Register: Academic / General (0.563)
+    ACS: 43.3 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 73  TTR: 0.699  Formality: 0.613
+    FK Grade: 13.35  Passive: 0.0  AvgSentLen: 37.0
+    Signals: 3exp/2aty/4ano
+    Anomalies: 0H/1M/1L
+
+  literary_003
+    Register: Casual / Blog Post (0.577)
+    ACS: 56.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 70  TTR: 0.714  Formality: 0.099
+    FK Grade: 3.63  Passive: 0.0  AvgSentLen: 11.83
+    Signals: 3exp/6aty/0ano
+    Anomalies: 0H/0M/0L
+
+  literary_004
+    Register: Literary / Fiction (0.5)
+    ACS: 62.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 36  TTR: 0.694  Formality: 0.4
+    FK Grade: 5.52  Passive: 0.0  AvgSentLen: 18.0
+    Signals: 4exp/5aty/0ano
+    Anomalies: 0H/0M/0L
+
+  literary_005
+    Register: Technical / Documentation (0.597)
+    ACS: 32.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 48  TTR: 0.688  Formality: 0.602
+    FK Grade: 4.09  Passive: 0.0  AvgSentLen: 12.25
+    Signals: 1exp/4aty/4ano
+    Anomalies: 0H/1M/1L
+
+  literary_006
+    Register: Academic / General (0.582)
+    ACS: 22.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 77  TTR: 0.753  Formality: 0.555
+    FK Grade: 29.61  Passive: 0.0  AvgSentLen: 78.0
+    Signals: 1exp/1aty/7ano
+    Anomalies: 0H/1M/4L
+
+  literary_007
+    Register: Academic / General (0.808)
+    ACS: 37.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 69  TTR: 0.725  Formality: 0.875
+    FK Grade: 11.55  Passive: 0.5  AvgSentLen: 35.0
+    Signals: 2exp/3aty/4ano
+    Anomalies: 0H/1M/2L
+
+  literary_008
+    Register: Literary / Fiction (0.581)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 60  TTR: 0.617  Formality: 0.25
+    FK Grade: 10.86  Passive: 0.0  AvgSentLen: 30.5
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/1L
+
+  literary_009
+    Register: Academic / General (0.562)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 53  TTR: 0.83  Formality: 0.721
+    FK Grade: 12.56  Passive: 0.0  AvgSentLen: 26.5
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/1L
+
+  literary_010
+    Register: Academic / General (0.651)
+    ACS: 28.9 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 66  TTR: 0.379  Formality: 0.75
+    FK Grade: 25.7  Passive: 0.0  AvgSentLen: 67.0
+    Signals: 1exp/3aty/5ano
+    Anomalies: 0H/1M/2L
+
+  literary_011
+    Register: Academic / Legal (0.95)
+    ACS: 52.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 76  TTR: 0.711  Formality: 0.875
+    FK Grade: 16.46  Passive: 0.5  AvgSentLen: 38.5
+    Signals: 4exp/2aty/3ano
+    Anomalies: 0H/1M/2L
+
+  literary_012
+    Register: Academic / General (0.53)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 58  TTR: 0.862  Formality: 0.746
+    FK Grade: 12.2  Passive: 0.0  AvgSentLen: 29.5
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/2L
+
+  literary_013
+    Register: Literary / Fiction (0.538)
+    ACS: 56.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 62  TTR: 0.823  Formality: 0.425
+    FK Grade: 9.41  Passive: 0.0  AvgSentLen: 21.0
+    Signals: 3exp/6aty/0ano
+    Anomalies: 0H/0M/0L
+
+  literary_014
+    Register: Technical / Documentation (0.537)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 50  TTR: 0.8  Formality: 0.642
+    FK Grade: 11.21  Passive: 0.0  AvgSentLen: 17.0
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/1L
+
+  literary_015
+    Register: Academic / General (0.638)
+    ACS: 52.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 75  TTR: 0.64  Formality: 0.708
+    FK Grade: 9.58  Passive: 0.0  AvgSentLen: 25.0
+    Signals: 4exp/2aty/3ano
+    Anomalies: 0H/1M/1L
+
+==================================================
+CATEGORY: LEGAL
+==================================================
+
+  legal_001
+    Register: Academic / General (0.517)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 112  TTR: 0.652  Formality: 0.75
+    FK Grade: 18.78  Passive: 0.0  AvgSentLen: 37.67
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/1L
+
+  legal_002
+    Register: Academic / General (0.715)
+    ACS: 66.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 105  TTR: 0.629  Formality: 0.773
+    FK Grade: 12.38  Passive: 0.4  AvgSentLen: 20.8
+    Signals: 6exp/1aty/2ano
+    Anomalies: 0H/0M/2L
+
+  legal_003
+    Register: Academic / General (0.576)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 95  TTR: 0.747  Formality: 0.5
+    FK Grade: 18.87  Passive: 0.0  AvgSentLen: 31.67
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/1L
+
+  legal_004
+    Register: Academic / General (0.613)
+    ACS: 48.9 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 127  TTR: 0.551  Formality: 0.75
+    FK Grade: 21.45  Passive: 0.0  AvgSentLen: 42.0
+    Signals: 4exp/1aty/4ano
+    Anomalies: 0H/1M/2L
+
+  legal_005
+    Register: Academic / Legal (0.925)
+    ACS: 48.9 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 113  TTR: 0.655  Formality: 0.695
+    FK Grade: 22.7  Passive: 0.667  AvgSentLen: 37.67
+    Signals: 4exp/1aty/4ano
+    Anomalies: 0H/1M/2L
+
+  legal_006
+    Register: Technical / Documentation (0.608)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 90  TTR: 0.678  Formality: 0.683
+    FK Grade: 16.65  Passive: 0.0  AvgSentLen: 22.0
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/0L
+
+  legal_007
+    Register: Academic / Legal (0.729)
+    ACS: 32.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 95  TTR: 0.716  Formality: 0.875
+    FK Grade: 26.16  Passive: 0.5  AvgSentLen: 47.5
+    Signals: 1exp/4aty/4ano
+    Anomalies: 0H/1M/4L
+
+  legal_008
+    Register: Academic / Scientific (0.512)
+    ACS: 61.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 102  TTR: 0.559  Formality: 0.767
+    FK Grade: 13.71  Passive: 0.5  AvgSentLen: 17.0
+    Signals: 5exp/2aty/2ano
+    Anomalies: 0H/0M/2L
+
+  legal_009
+    Register: Technical / Documentation (0.547)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 95  TTR: 0.642  Formality: 0.75
+    FK Grade: 20.61  Passive: 0.0  AvgSentLen: 32.0
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/1L
+
+  legal_010
+    Register: Technical / Documentation (0.59)
+    ACS: 37.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 95  TTR: 0.747  Formality: 0.75
+    FK Grade: 26.16  Passive: 0.0  AvgSentLen: 47.5
+    Signals: 2exp/3aty/4ano
+    Anomalies: 0H/1M/2L
+
+==================================================
+CATEGORY: JOURNALISM
+==================================================
+
+  journalism_001
+    Register: Technical / Documentation (0.56)
+    ACS: 57.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 96  TTR: 0.896  Formality: 0.707
+    FK Grade: 10.41  Passive: 0.2  AvgSentLen: 18.8
+    Signals: 5exp/1aty/3ano
+    Anomalies: 0H/1M/2L
+
+  journalism_002
+    Register: Academic / Legal (0.889)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 105  TTR: 0.79  Formality: 0.775
+    FK Grade: 14.54  Passive: 0.25  AvgSentLen: 25.5
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  journalism_003
+    Register: Academic / Legal (0.729)
+    ACS: 34.4 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 87  TTR: 0.816  Formality: 0.908
+    FK Grade: 20.54  Passive: 0.667  AvgSentLen: 29.0
+    Signals: 2exp/2aty/5ano
+    Anomalies: 0H/1M/2L
+
+  journalism_004
+    Register: Technical / Documentation (0.545)
+    ACS: 48.9 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 96  TTR: 0.75  Formality: 0.613
+    FK Grade: 11.55  Passive: 0.333  AvgSentLen: 16.0
+    Signals: 4exp/1aty/4ano
+    Anomalies: 0H/1M/1L
+
+  journalism_005
+    Register: Academic / Legal (0.95)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 98  TTR: 0.796  Formality: 0.833
+    FK Grade: 16.66  Passive: 0.333  AvgSentLen: 31.33
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/2L
+
+  journalism_006
+    Register: Technical / Documentation (0.7)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 88  TTR: 0.841  Formality: 0.647
+    FK Grade: 16.48  Passive: 0.0  AvgSentLen: 17.6
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/1L
+
+  journalism_007
+    Register: Technical / Documentation (0.641)
+    ACS: 44.4 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 100  TTR: 0.76  Formality: 0.708
+    FK Grade: 15.75  Passive: 0.0  AvgSentLen: 25.0
+    Signals: 2exp/5aty/2ano
+    Anomalies: 0H/0M/0L
+
+  journalism_008
+    Register: Academic / General (0.517)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 89  TTR: 0.865  Formality: 0.744
+    FK Grade: 17.19  Passive: 0.0  AvgSentLen: 29.33
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/2L
+
+  journalism_009
+    Register: Technical / Documentation (0.641)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 94  TTR: 0.872  Formality: 0.75
+    FK Grade: 15.54  Passive: 0.0  AvgSentLen: 31.0
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/2L
+
+  journalism_010
+    Register: Technical / Documentation (0.512)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 95  TTR: 0.884  Formality: 0.657
+    FK Grade: 10.33  Passive: 0.0  AvgSentLen: 18.8
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+==================================================
+CATEGORY: TECHNICAL
+==================================================
+
+  technical_001
+    Register: Academic / General (0.603)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 98  TTR: 0.704  Formality: 0.721
+    FK Grade: 9.9  Passive: 0.429  AvgSentLen: 13.71
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/2L
+
+  technical_002
+    Register: Academic / Scientific (0.558)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 99  TTR: 0.737  Formality: 0.757
+    FK Grade: 13.11  Passive: 0.4  AvgSentLen: 18.8
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/2L
+
+  technical_003
+    Register: Technical / Documentation (0.747)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 101  TTR: 0.762  Formality: 0.601
+    FK Grade: 8.6  Passive: 0.154  AvgSentLen: 7.54
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/0L
+
+  technical_004
+    Register: Academic / General (0.537)
+    ACS: 58.9 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 87  TTR: 0.724  Formality: 0.742
+    FK Grade: 13.78  Passive: 0.25  AvgSentLen: 21.5
+    Signals: 4exp/4aty/1ano
+    Anomalies: 0H/0M/1L
+
+  technical_005
+    Register: Academic / Legal (0.551)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 84  TTR: 0.881  Formality: 0.738
+    FK Grade: 16.62  Passive: 0.25  AvgSentLen: 21.0
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/2L
+
+  technical_006
+    Register: Technical / Documentation (0.679)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 101  TTR: 0.832  Formality: 0.75
+    FK Grade: 15.89  Passive: 0.0  AvgSentLen: 33.0
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/2L
+
+  technical_007
+    Register: Technical / Documentation (0.524)
+    ACS: 40.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 90  TTR: 0.778  Formality: 0.497
+    FK Grade: 12.29  Passive: 0.5  AvgSentLen: 14.67
+    Signals: 3exp/1aty/5ano
+    Anomalies: 0H/1M/2L
+
+  technical_008
+    Register: Technical / Documentation (0.583)
+    ACS: 61.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 99  TTR: 0.818  Formality: 0.662
+    FK Grade: 12.3  Passive: 0.167  AvgSentLen: 14.5
+    Signals: 5exp/2aty/2ano
+    Anomalies: 0H/0M/1L
+
+  technical_009
+    Register: Technical / Documentation (0.534)
+    ACS: 52.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 101  TTR: 0.733  Formality: 0.724
+    FK Grade: 12.82  Passive: 0.333  AvgSentLen: 16.83
+    Signals: 4exp/2aty/3ano
+    Anomalies: 0H/1M/1L
+
+  technical_010
+    Register: Academic / Legal (0.682)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 85  TTR: 0.824  Formality: 0.817
+    FK Grade: 19.2  Passive: 0.333  AvgSentLen: 28.0
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/2L
+
+==================================================
+CATEGORY: PERSONAL
+==================================================
+
+  personal_001
+    Register: Literary / Fiction (0.521)
+    ACS: 44.4 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 104  TTR: 0.779  Formality: 0.432
+    FK Grade: 4.32  Passive: 0.0  AvgSentLen: 9.09
+    Signals: 2exp/5aty/2ano
+    Anomalies: 0H/0M/0L
+
+  personal_002
+    Register: Casual / Blog Post (0.621)
+    ACS: 43.3 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 87  TTR: 0.793  Formality: 0.331
+    FK Grade: 4.73  Passive: 0.0  AvgSentLen: 9.67
+    Signals: 3exp/2aty/4ano
+    Anomalies: 0H/1M/0L
+
+  personal_003
+    Register: Literary / Fiction (0.552)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 90  TTR: 0.844  Formality: 0.375
+    FK Grade: 6.26  Passive: 0.0  AvgSentLen: 15.0
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/0L
+
+  personal_004
+    Register: Technical / Documentation (0.631)
+    ACS: 37.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 104  TTR: 0.721  Formality: 0.576
+    FK Grade: 5.98  Passive: 0.0  AvgSentLen: 14.86
+    Signals: 2exp/3aty/4ano
+    Anomalies: 0H/1M/1L
+
+  personal_005
+    Register: Literary / Fiction (0.514)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 91  TTR: 0.802  Formality: 0.418
+    FK Grade: 6.53  Passive: 0.167  AvgSentLen: 15.17
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/0L
+
+  personal_006
+    Register: Literary / Fiction (0.515)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 95  TTR: 0.8  Formality: 0.438
+    FK Grade: 7.84  Passive: 0.143  AvgSentLen: 13.57
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/0L
+
+  personal_007
+    Register: Casual / Blog Post (0.518)
+    ACS: 58.9 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 85  TTR: 0.776  Formality: 0.471
+    FK Grade: 5.21  Passive: 0.0  AvgSentLen: 10.62
+    Signals: 4exp/4aty/1ano
+    Anomalies: 0H/0M/0L
+
+  personal_008
+    Register: Technical / Documentation (0.538)
+    ACS: 35.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 93  TTR: 0.796  Formality: 0.425
+    FK Grade: 5.7  Passive: 0.0  AvgSentLen: 10.33
+    Signals: 1exp/5aty/3ano
+    Anomalies: 0H/1M/0L
+
+  personal_009
+    Register: Casual / Blog Post (0.591)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 84  TTR: 0.869  Formality: 0.35
+    FK Grade: 5.53  Passive: 0.0  AvgSentLen: 12.0
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/0L
+
+  personal_010
+    Register: Literary / Fiction (0.554)
+    ACS: 58.9 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 88  TTR: 0.784  Formality: 0.355
+    FK Grade: 6.21  Passive: 0.0  AvgSentLen: 12.57
+    Signals: 4exp/4aty/1ano
+    Anomalies: 0H/0M/0L
+
+==================================================
+CATEGORY: BUSINESS
+==================================================
+
+  business_001
+    Register: Technical / Documentation (0.655)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 102  TTR: 0.765  Formality: 0.708
+    FK Grade: 10.72  Passive: 0.0  AvgSentLen: 25.0
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/0L
+
+  business_002
+    Register: Technical / Documentation (0.626)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 99  TTR: 0.778  Formality: 0.413
+    FK Grade: 15.28  Passive: 0.0  AvgSentLen: 19.6
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/0L
+
+  business_003
+    Register: Technical / Documentation (0.578)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 108  TTR: 0.676  Formality: 0.698
+    FK Grade: 11.09  Passive: 0.286  AvgSentLen: 15.14
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  business_004
+    Register: Technical / Documentation (0.645)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 105  TTR: 0.733  Formality: 0.725
+    FK Grade: 15.08  Passive: 0.2  AvgSentLen: 21.0
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/0L
+
+  business_005
+    Register: Academic / General (0.567)
+    ACS: 52.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 101  TTR: 0.802  Formality: 0.669
+    FK Grade: 13.64  Passive: 0.4  AvgSentLen: 20.2
+    Signals: 4exp/2aty/3ano
+    Anomalies: 0H/1M/2L
+
+  business_006
+    Register: Academic / General (0.623)
+    ACS: 44.4 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 114  TTR: 0.667  Formality: 0.736
+    FK Grade: 10.45  Passive: 0.333  AvgSentLen: 18.33
+    Signals: 2exp/5aty/2ano
+    Anomalies: 0H/0M/2L
+
+  business_007
+    Register: Technical / Documentation (0.538)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 96  TTR: 0.802  Formality: 0.655
+    FK Grade: 17.96  Passive: 0.2  AvgSentLen: 18.8
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/2L
+
+  business_008
+    Register: Technical / Documentation (0.663)
+    ACS: 44.4 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 101  TTR: 0.733  Formality: 0.667
+    FK Grade: 16.24  Passive: 0.0  AvgSentLen: 20.0
+    Signals: 2exp/5aty/2ano
+    Anomalies: 0H/0M/0L
+
+  business_009
+    Register: Academic / Scientific (0.618)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 98  TTR: 0.714  Formality: 0.917
+    FK Grade: 11.66  Passive: 0.667  AvgSentLen: 32.0
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/2L
+
+  business_010
+    Register: Academic / General (0.532)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 104  TTR: 0.769  Formality: 0.671
+    FK Grade: 13.42  Passive: 0.4  AvgSentLen: 20.0
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/2L
+
+==================================================
+CATEGORY: MEDICAL
+==================================================
+
+  medical_001
+    Register: Technical / Documentation (0.648)
+    ACS: 57.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 111  TTR: 0.829  Formality: 0.663
+    FK Grade: 13.13  Passive: 0.143  AvgSentLen: 15.29
+    Signals: 5exp/1aty/3ano
+    Anomalies: 0H/1M/2L
+
+  medical_002
+    Register: Technical / Documentation (0.643)
+    ACS: 44.4 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 104  TTR: 0.76  Formality: 0.686
+    FK Grade: 16.7  Passive: 0.167  AvgSentLen: 17.33
+    Signals: 2exp/5aty/2ano
+    Anomalies: 0H/0M/0L
+
+  medical_003
+    Register: Technical / Documentation (0.552)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 117  TTR: 0.641  Formality: 0.797
+    FK Grade: 13.18  Passive: 0.8  AvgSentLen: 11.7
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/1L
+
+  medical_004
+    Register: Academic / Legal (0.664)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 114  TTR: 0.781  Formality: 0.787
+    FK Grade: 16.49  Passive: 0.4  AvgSentLen: 22.4
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/2L
+
+  medical_005
+    Register: Technical / Documentation (0.566)
+    ACS: 37.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 115  TTR: 0.8  Formality: 0.496
+    FK Grade: 10.93  Passive: 0.444  AvgSentLen: 12.33
+    Signals: 2exp/3aty/4ano
+    Anomalies: 0H/1M/3L
+
+  medical_006
+    Register: Technical / Documentation (0.538)
+    ACS: 46.7 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 116  TTR: 0.784  Formality: 0.708
+    FK Grade: 11.51  Passive: 0.375  AvgSentLen: 13.75
+    Signals: 3exp/3aty/3ano
+    Anomalies: 0H/1M/2L
+
+  medical_007
+    Register: Technical / Documentation (0.548)
+    ACS: 44.4 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 120  TTR: 0.708  Formality: 0.735
+    FK Grade: 15.4  Passive: 0.2  AvgSentLen: 22.2
+    Signals: 2exp/5aty/2ano
+    Anomalies: 0H/0M/0L
+
+  medical_008
+    Register: Technical / Documentation (0.513)
+    ACS: 52.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 122  TTR: 0.73  Formality: 0.646
+    FK Grade: 10.6  Passive: 0.25  AvgSentLen: 10.0
+    Signals: 4exp/2aty/3ano
+    Anomalies: 0H/1M/1L
+
+  medical_009
+    Register: Technical / Documentation (0.634)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 127  TTR: 0.811  Formality: 0.63
+    FK Grade: 9.26  Passive: 0.1  AvgSentLen: 12.6
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  medical_010
+    Register: Technical / Documentation (0.643)
+    ACS: 44.4 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 114  TTR: 0.807  Formality: 0.651
+    FK Grade: 16.97  Passive: 0.0  AvgSentLen: 18.17
+    Signals: 2exp/5aty/2ano
+    Anomalies: 0H/0M/1L
+
+==================================================
+CATEGORY: POLITICAL
+==================================================
+
+  political_001
+    Register: Technical / Documentation (0.663)
+    ACS: 37.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 102  TTR: 0.775  Formality: 0.67
+    FK Grade: 18.4  Passive: 0.0  AvgSentLen: 20.4
+    Signals: 2exp/3aty/4ano
+    Anomalies: 0H/1M/0L
+
+  political_002
+    Register: Literary / Fiction (0.552)
+    ACS: 58.9 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 109  TTR: 0.688  Formality: 0.372
+    FK Grade: 6.35  Passive: 0.0  AvgSentLen: 12.11
+    Signals: 4exp/4aty/1ano
+    Anomalies: 0H/0M/0L
+
+  political_003
+    Register: Technical / Documentation (0.707)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 112  TTR: 0.804  Formality: 0.654
+    FK Grade: 14.88  Passive: 0.0  AvgSentLen: 18.5
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  political_004
+    Register: Technical / Documentation (0.643)
+    ACS: 41.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 101  TTR: 0.752  Formality: 0.7
+    FK Grade: 19.03  Passive: 0.0  AvgSentLen: 24.0
+    Signals: 2exp/4aty/3ano
+    Anomalies: 0H/1M/0L
+
+  political_005
+    Register: Academic / Scientific (0.5)
+    ACS: 43.3 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 97  TTR: 0.773  Formality: 0.717
+    FK Grade: 13.29  Passive: 0.333  AvgSentLen: 16.0
+    Signals: 3exp/2aty/4ano
+    Anomalies: 0H/1M/2L
+
+==================================================
+CATEGORY: MIXED
+==================================================
+
+  ai_style_001
+    Register: Technical / Documentation (0.626)
+    ACS: 61.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 108  TTR: 0.778  Formality: 0.559
+    FK Grade: 14.59  Passive: 0.0  AvgSentLen: 18.17
+    Signals: 5exp/2aty/2ano
+    Anomalies: 0H/0M/0L
+
+  ai_style_002
+    Register: Technical / Documentation (0.718)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 114  TTR: 0.816  Formality: 0.617
+    FK Grade: 12.74  Passive: 0.0  AvgSentLen: 14.0
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  ai_style_003
+    Register: Technical / Documentation (0.717)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 105  TTR: 0.819  Formality: 0.665
+    FK Grade: 13.82  Passive: 0.0  AvgSentLen: 19.8
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  ai_style_004
+    Register: Technical / Documentation (0.659)
+    ACS: 37.8 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 108  TTR: 0.824  Formality: 0.627
+    FK Grade: 19.06  Passive: 0.0  AvgSentLen: 20.8
+    Signals: 2exp/3aty/4ano
+    Anomalies: 0H/1M/1L
+
+  ai_style_005
+    Register: Literary / Fiction (0.5)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 117  TTR: 0.761  Formality: 0.454
+    FK Grade: 11.18  Passive: 0.167  AvgSentLen: 19.5
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/0L
+
+  ai_style_006
+    Register: Academic / General (0.54)
+    ACS: 61.1 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 126  TTR: 0.69  Formality: 0.457
+    FK Grade: 17.0  Passive: 0.0  AvgSentLen: 24.8
+    Signals: 5exp/2aty/2ano
+    Anomalies: 0H/0M/1L
+
+  ai_style_007
+    Register: Technical / Documentation (0.632)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 113  TTR: 0.788  Formality: 0.652
+    FK Grade: 13.27  Passive: 0.167  AvgSentLen: 18.5
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/1L
+
+  ai_style_008
+    Register: Technical / Documentation (0.641)
+    ACS: 55.6 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 117  TTR: 0.778  Formality: 0.411
+    FK Grade: 13.5  Passive: 0.0  AvgSentLen: 19.33
+    Signals: 4exp/3aty/2ano
+    Anomalies: 0H/0M/0L
+
+  ai_style_009
+    Register: Technical / Documentation (0.557)
+    ACS: 52.2 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 111  TTR: 0.757  Formality: 0.561
+    FK Grade: 14.27  Passive: 0.0  AvgSentLen: 18.17
+    Signals: 4exp/2aty/3ano
+    Anomalies: 0H/1M/0L
+
+  ai_style_010
+    Register: Technical / Documentation (0.6)
+    ACS: 50.0 (+/-22.0)  PII: 0.0 (Insufficient)
+    Words: 121  TTR: 0.711  Formality: 0.625
+    FK Grade: 9.62  Passive: 0.0  AvgSentLen: 15.0
+    Signals: 3exp/4aty/2ano
+    Anomalies: 0H/0M/0L

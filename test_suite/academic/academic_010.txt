@@ -1,0 +1,3 @@
+Properties of Particles Obeying Ambiguous Statistics
+
+A new class of identical particles which may exhibit both Bose and Fermi statistics with respective probabilities $p_b$ and $p_f$ is introduced. Such an uncertainity may be either an intrinsic property of a particle or can be viewed as an ``experimental uncertainity''. Statistical equivalence of such particles and particles obeying parastatistics of infinite order is shown. Generalized statistical distributions are derived and statistical and thermodynamical properties of an ideal gas of the particles are investigated. The physical nature of such particles and the implications of this investigation for the statistics of extremal black holes are discussed.

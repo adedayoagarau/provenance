@@ -1,0 +1,164 @@
+{
+  "total": 109,
+  "categories": {
+    "academic": {
+      "count": 19,
+      "files": [
+        "academic_001.txt",
+        "academic_002.txt",
+        "academic_003.txt",
+        "academic_004.txt",
+        "academic_005.txt",
+        "academic_006.txt",
+        "academic_007.txt",
+        "academic_008.txt",
+        "academic_009.txt",
+        "academic_010.txt",
+        "academic_011.txt",
+        "academic_012.txt",
+        "academic_013.txt",
+        "academic_014.txt",
+        "academic_015.txt",
+        "academic_016.txt",
+        "academic_017.txt",
+        "academic_018.txt",
+        "academic_019.txt"
+      ]
+    },
+    "literary": {
+      "count": 15,
+      "files": [
+        "literary_001.txt",
+        "literary_002.txt",
+        "literary_003.txt",
+        "literary_004.txt",
+        "literary_005.txt",
+        "literary_006.txt",
+        "literary_007.txt",
+        "literary_008.txt",
+        "literary_009.txt",
+        "literary_010.txt",
+        "literary_011.txt",
+        "literary_012.txt",
+        "literary_013.txt",
+        "literary_014.txt",
+        "literary_015.txt"
+      ]
+    },
+    "legal": {
+      "count": 10,
+      "files": [
+        "legal_001.txt",
+        "legal_002.txt",
+        "legal_003.txt",
+        "legal_004.txt",
+        "legal_005.txt",
+        "legal_006.txt",
+        "legal_007.txt",
+        "legal_008.txt",
+        "legal_009.txt",
+        "legal_010.txt"
+      ]
+    },
+    "journalism": {
+      "count": 10,
+      "files": [
+        "journalism_001.txt",
+        "journalism_002.txt",
+        "journalism_003.txt",
+        "journalism_004.txt",
+        "journalism_005.txt",
+        "journalism_006.txt",
+        "journalism_007.txt",
+        "journalism_008.txt",
+        "journalism_009.txt",
+        "journalism_010.txt"
+      ]
+    },
+    "technical": {
+      "count": 10,
+      "files": [
+        "technical_001.txt",
+        "technical_002.txt",
+        "technical_003.txt",
+        "technical_004.txt",
+        "technical_005.txt",
+        "technical_006.txt",
+        "technical_007.txt",
+        "technical_008.txt",
+        "technical_009.txt",
+        "technical_010.txt"
+      ]
+    },
+    "personal": {
+      "count": 10,
+      "files": [
+        "personal_001.txt",
+        "personal_002.txt",
+        "personal_003.txt",
+        "personal_004.txt",
+        "personal_005.txt",
+        "personal_006.txt",
+        "personal_007.txt",
+        "personal_008.txt",
+        "personal_009.txt",
+        "personal_010.txt"
+      ]
+    },
+    "business": {
+      "count": 10,
+      "files": [
+        "business_001.txt",
+        "business_002.txt",
+        "business_003.txt",
+        "business_004.txt",
+        "business_005.txt",
+        "business_006.txt",
+        "business_007.txt",
+        "business_008.txt",
+        "business_009.txt",
+        "business_010.txt"
+      ]
+    },
+    "medical": {
+      "count": 10,
+      "files": [
+        "medical_001.txt",
+        "medical_002.txt",
+        "medical_003.txt",
+        "medical_004.txt",
+        "medical_005.txt",
+        "medical_006.txt",
+        "medical_007.txt",
+        "medical_008.txt",
+        "medical_009.txt",
+        "medical_010.txt"
+      ]
+    },
+    "political": {
+      "count": 5,
+      "files": [
+        "political_001.txt",
+        "political_002.txt",
+        "political_003.txt",
+        "political_004.txt",
+        "political_005.txt"
+      ]
+    },
+    "mixed": {
+      "count": 10,
+      "files": [
+        "ai_style_001.txt",
+        "ai_style_002.txt",
+        "ai_style_003.txt",
+        "ai_style_004.txt",
+        "ai_style_005.txt",
+        "ai_style_006.txt",
+        "ai_style_007.txt",
+        "ai_style_008.txt",
+        "ai_style_009.txt",
+        "ai_style_010.txt"
+      ]
+    }
+  }
+}

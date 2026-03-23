@@ -1,0 +1,3 @@
+Feature: Small Town Revival
+
+When the last factory in Millbrook shuttered its doors in 2019, most people assumed the town would simply fade away. Five years later, the picture looks remarkably different. A combination of remote work migration, state tax incentives, and a grassroots revitalization effort has transformed this once-struggling community into one of the fastest-growing small towns in the region. Population has grown by 23 percent since 2020, new businesses are opening at a rate not seen since the 1970s, and the old factory building itself has been converted into a mixed-use development housing a brewery, coworking space, and artist studios.

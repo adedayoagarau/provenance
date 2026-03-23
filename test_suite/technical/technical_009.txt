@@ -1,0 +1,3 @@
+Kubernetes Deployment Manifest
+
+The application is deployed as a StatefulSet with three replicas across three availability zones. Each pod requests 500m CPU and 1Gi memory with limits set to 2 CPU and 4Gi memory. Horizontal Pod Autoscaler is configured to scale between 3 and 12 replicas based on CPU utilization targeting 70 percent. Persistent volumes use the gp3 storage class with 100Gi capacity and ReadWriteOnce access mode. Liveness probes check the health endpoint every 10 seconds with a failure threshold of 3. Readiness probes check the ready endpoint every 5 seconds to ensure traffic is only routed to fully initialized pods.

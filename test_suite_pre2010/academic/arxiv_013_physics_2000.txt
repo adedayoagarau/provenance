@@ -1,0 +1,3 @@
+Schwarzschild's Curved Spacetime Lagrangian with Its Quantum Equations
+
+From the curved spacetime Lagrangian the first approximation scalar particle quantum equation was obtained following the canonical formalism. The roots of this equation in Schwarzschild's pseudo flat space were found. As it was shown in a more general curved spacetime it is tedious to find equation's roots. The massless particle limiting case was considered. The Maxwell set of equations generalized to Schwarzschild's space was reproduced.

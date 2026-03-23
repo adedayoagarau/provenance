@@ -1,0 +1,3 @@
+Customer Success Playbook
+
+The 90-day customer onboarding process consists of three phases. Phase 1, Implementation, spans days 1 through 30 and includes technical setup, data migration, and initial configuration. The assigned Customer Success Manager conducts a kickoff call within the first 48 hours to align on objectives, success criteria, and communication cadence. Phase 2, Activation, covers days 31 through 60 and focuses on user training, workflow optimization, and establishing usage benchmarks. Phase 3, Value Realization, spans days 61 through 90 and involves measuring outcomes against the defined success criteria, identifying expansion opportunities, and transitioning to the ongoing relationship management model.

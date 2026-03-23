@@ -1,0 +1,3 @@
+Deployment Runbook
+
+Pre-deployment checklist: 1. Verify all integration tests pass on the staging environment. 2. Confirm database migration scripts have been reviewed and approved. 3. Ensure rollback procedures are documented and tested. 4. Notify the on-call team of the planned deployment window. Deployment steps: Execute the CI/CD pipeline by merging the release branch to main. Monitor the deployment dashboard for any errors during the canary phase. The canary phase deploys to 5 percent of production traffic for 15 minutes. If error rates remain below 0.1 percent, proceed to full rollout. If error rates exceed threshold, initiate automatic rollback.

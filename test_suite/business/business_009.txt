@@ -1,0 +1,3 @@
+Annual Budget Proposal
+
+The proposed FY2025 operating budget totals 127.4 million dollars, representing a 9 percent increase over the current fiscal year. The largest increases are concentrated in three areas: engineering headcount expansion of 45 positions to support the product roadmap at an incremental cost of 6.8 million dollars, cloud infrastructure scaling to accommodate projected 40 percent user growth at 3.2 million dollars, and go-to-market investment in two new geographic regions at 2.1 million dollars. These investments are projected to generate incremental annual recurring revenue of 18 to 22 million dollars within 18 months of deployment.

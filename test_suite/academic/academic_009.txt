@@ -1,0 +1,3 @@
+Developments in time analysis of particle and photon tunnelling
+
+A compact analysis of development and prospects in the study of the tunnelling evolution is given. A new systematization of various approaches to defining tunnelling times in the light of time as a quantum mechanical observable is proposed. The problem of superluminal group velocities, without violations of special relativity, is also taken in account. Then a particular attention is devoted to the presentation of new results on the analogy between particle and photon tunnelling and analysis of the causality validity during tunnelling. [PACS nos. 03.40.Kf, 03.50.De, 41.20.Jb, 41.20.Bt, 42.25.Bs, 03.30.+p, 03.65.-w].

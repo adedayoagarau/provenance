@@ -1,0 +1,3 @@
+Clinical Trial Protocol Summary
+
+This is a phase 2, randomized, double-blind, placebo-controlled study to evaluate the efficacy and safety of compound XR-7291 in patients with moderate to severe rheumatoid arthritis who have had an inadequate response to methotrexate. Approximately 240 patients will be randomized in a 1:1:1 ratio to receive XR-7291 200mg, XR-7291 400mg, or placebo administered subcutaneously every two weeks for 24 weeks. The primary endpoint is the proportion of patients achieving ACR50 response at Week 12. Key secondary endpoints include change from baseline in DAS28-CRP at Week 24, ACR20 and ACR70 response rates, and change from baseline in HAQ-DI score. Safety assessments include adverse events, laboratory parameters, and immunogenicity.

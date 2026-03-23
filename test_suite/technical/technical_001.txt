@@ -1,0 +1,3 @@
+API Documentation - Authentication
+
+Authentication is performed via OAuth 2.0 Bearer tokens. All API requests must include a valid access token in the Authorization header. To obtain an access token, send a POST request to /oauth/token with your client_id and client_secret as parameters. Tokens expire after 3600 seconds. Refresh tokens can be used to obtain new access tokens without requiring the user to re-authenticate. Rate limiting is enforced at 1000 requests per minute per token. Exceeding this limit will result in HTTP 429 responses with a Retry-After header indicating when the next request can be made.

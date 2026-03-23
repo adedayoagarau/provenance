@@ -1,0 +1,3 @@
+Contract Clause - Force Majeure
+
+Neither party shall be liable for any failure or delay in performing their obligations under this Agreement where such failure or delay results from Force Majeure. Force Majeure means any event beyond the reasonable control of the affected party, including but not limited to acts of God, fire, flood, earthquake, epidemic, pandemic, war, terrorism, strikes, government actions, or any other event that could not have been reasonably foreseen or prevented. The affected party must notify the other party in writing within fourteen days of the Force Majeure event and must use all reasonable endeavors to mitigate the effect of the Force Majeure on the performance of its obligations.

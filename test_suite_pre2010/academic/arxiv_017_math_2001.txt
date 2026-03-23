@@ -1,0 +1,3 @@
+The Floyd-Warshall Algorithm, the AP and the TSP
+
+We use admissible permutations and a variant of the Floyd-Warshall algorithm to obtain an optimal solution to the Assignment Problem. Using another variant of the F-W algorithm, we obtain an approximate solution to the Traveling Salesman Problem. We also give a sufficient condition for the approximate solution to be an optimal solution.

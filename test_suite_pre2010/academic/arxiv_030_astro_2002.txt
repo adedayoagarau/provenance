@@ -1,0 +1,3 @@
+Inverse square law for the starter intensity of the discrete ordinates method in spherical geometry
+
+The angular derivative of the standard form of the transfer equation is shown to have a non-zero value for the radiation normal incidence. This is demonstrated by a rigorous proof. The transfer equation for the starter intensity turned out to be Euler first order equation its solution obeys the inverse square law.

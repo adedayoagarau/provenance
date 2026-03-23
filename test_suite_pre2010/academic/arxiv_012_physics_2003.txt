@@ -1,0 +1,3 @@
+Nonholonomic Constraints and Voronec's Equations
+
+Is it allowed, in the context of the Lagrange multiplier formalism, to assume that nonholonomic constraints are already in effect while setting up Lagrange's function? This procedure is successfully applied in a recent book [L. N. Hand and J. D Finch, {\it Analytical Mechanics}] to the problem of the rolling penny, but it does not work in general, as we show by means of a counterexample. It turns out that in many cases the use of nonholonomic constraints in the process of construction of the Lagrangian is allowed, but the correct equations of motion are the little known Voronec's equations.

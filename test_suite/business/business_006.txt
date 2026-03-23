@@ -1,0 +1,3 @@
+Employee Onboarding Guide
+
+Welcome to the team. Your first two weeks are designed to help you build context and relationships before diving into project work. During Week 1, you will complete mandatory compliance training, set up your development environment, and attend introduction sessions with each department lead. Your onboarding buddy, assigned on your first day, will be your primary resource for questions about team norms, tools, and processes. During Week 2, you will shadow a senior team member on active project work, complete your first code review, and attend your first sprint planning session. Your 30-60-90 day goals will be established in collaboration with your manager during your first one-on-one.

@@ -1,0 +1,3 @@
+Tech: AI Regulation Debate
+
+As artificial intelligence systems become increasingly embedded in everyday life, the debate over how to regulate the technology has intensified. Lawmakers in several countries are grappling with fundamental questions about liability, transparency, and safety. Proponents of strict regulation argue that the potential for harm, from biased hiring algorithms to autonomous weapons, demands immediate action. Industry representatives counter that overly restrictive rules could stifle innovation and push development to less regulated jurisdictions. The European Union has taken the most aggressive approach with its AI Act.
