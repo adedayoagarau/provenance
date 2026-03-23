@@ -1,0 +1,89 @@
+{
+  "register": "academic",
+  "subdomains": ["computer_science", "mathematics", "statistics"],
+  "source": "arXiv abstracts, 2000-2010",
+  "sample_size": 100,
+  "collection_date": "2026-03-22",
+  "notes": "Plain text abstracts only. All metrics derived from abstract-length text (30-294 words). Paragraphs fixed at 3 due to extraction format (metadata header + blank line + abstract body). These baselines establish the variance envelope for academic writing — not point estimates. The wide TTR and sentence-length ranges demonstrate why single-threshold detectors fail on this register.",
+  "category_distribution": {
+    "cs.CL": 28,
+    "cs.AI": 26,
+    "cs.LG": 23,
+    "math.ST": 13,
+    "cs.PL": 11,
+    "cs.DB": 11,
+    "cs.LO": 10,
+    "stat.ML": 10,
+    "cs.SE": 9,
+    "cs.CR": 6,
+    "cs.IR": 6
+  },
+  "year_distribution": {
+    "2000": 64,
+    "2002": 1,
+    "2004": 22,
+    "2005": 7,
+    "2007": 6
+  },  "metrics": {
+    "word_count": {
+      "mean": 156.54,
+      "median": 150.0,
+      "std": 53.87,
+      "min": 30.0,
+      "max": 294.0,
+      "p10": 83.0,
+      "p90": 228.0
+    },
+    "unique_words": {
+      "mean": 100.94,
+      "median": 99.0,
+      "std": 27.26,
+      "min": 28.0,
+      "max": 168.0
+    },
+    "type_token_ratio": {
+      "mean": 0.67,
+      "median": 0.66,
+      "std": 0.08,
+      "min": 0.49,
+      "max": 0.93,
+      "p10": 0.57,
+      "p90": 0.79,
+      "note": "Inversely correlated with word count — shorter abstracts naturally show higher TTR. Normalize by length before comparing."
+    },    "hapax_legomena": {
+      "mean": 76.97,
+      "median": 76.0,
+      "std": 20.04,
+      "min": 26.0,
+      "max": 129.0
+    },
+    "avg_word_length": {
+      "mean": 5.49,
+      "median": 5.49,
+      "std": 0.36,
+      "min": 4.28,
+      "max": 6.42,
+      "note": "Academic writing skews longer due to technical vocabulary. Math/stats papers trend toward 5.8-6.4; CS/AI papers toward 5.0-5.5."
+    },
+    "sentence_count": {
+      "mean": 9.03,
+      "median": 9.0,
+      "std": 3.56,
+      "min": 3.0,
+      "max": 22.0
+    },
+    "avg_words_per_sentence": {
+      "mean": 17.51,
+      "median": 17.5,
+      "std": 4.18,
+      "min": 7.8,
+      "max": 33.0,
+      "note": "High variance. Papers with formal logical exposition (e.g., paper #54 at 33.0 w/s) vs. papers with enumerated contributions (e.g., paper #10 at 7.8 w/s) represent fundamentally different rhetorical strategies within the same register."
+    }
+  },
+  "variance_analysis": {
+    "high_variance_features": ["type_token_ratio", "avg_words_per_sentence", "sentence_count"],
+    "low_variance_features": ["avg_word_length"],
+    "implication": "Text-only signals have weak discriminative power for academic writing due to high intra-register variance. Forensic evidence (document construction patterns, metadata, revision history) is critical for reliable classification in this register."
+  }
+}
