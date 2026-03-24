@@ -164,6 +164,17 @@ enum Commands {
         format: String,
     },
 
+    /// Detect AI-generated writing in a document (no author profile needed)
+    Detect {
+        /// Path to the document to analyze
+        #[arg(short, long)]
+        file: String,
+
+        /// Output format: text, json
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
+
     /// Detect humanizer tool artifacts in a document
     DetectHumanizer {
         /// Path to the document to analyze
@@ -341,6 +352,15 @@ fn main() -> anyhow::Result<()> {
             let output_format: OutputFormat = format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
             let report = provenance::adversarial_report(output_format)?;
             println!("{report}");
+        }
+        Commands::Detect { file, format } => {
+            info!(file = %file, "Running AI detection analysis");
+            let result = provenance::detection::detect_file(&file)?;
+            let output = match format.as_str() {
+                "json" => provenance::detection::format_json(&result),
+                _ => provenance::detection::format_text(&result),
+            };
+            println!("{output}");
         }
         Commands::DetectHumanizer { file, format } => {
             info!(file = %file, "Running humanizer detection");
