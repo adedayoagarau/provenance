@@ -29,6 +29,21 @@ pub struct DetectionFeatures {
     pub interaction: Option<InteractionResult>,
 }
 
+impl DetectionFeatures {
+    /// Count how many features were successfully extracted.
+    /// Interaction counts as 2 (diversity-length + repetition-position).
+    pub fn feature_count(&self) -> usize {
+        let mut count = 0;
+        if self.burstiness.is_some() { count += 1; }
+        if self.zipf.is_some() { count += 1; }
+        if self.hedge_ratio.is_some() { count += 1; }
+        if self.autocorrelation.is_some() { count += 1; }
+        if self.pos_entropy.is_some() { count += 1; }
+        if self.interaction.is_some() { count += 2; }
+        count
+    }
+}
+
 /// Individual feature score with its contribution weight and explanation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FeatureScore {
