@@ -16,6 +16,8 @@ use super::{
     interaction::InteractionResult,
     pos_entropy::PosEntropyResult,
     zipf::ZipfResult,
+    tier2_features::Tier2Result,
+    advanced_features::AdvancedFeatureResult,
 };
 
 /// Raw feature values extracted from text.
@@ -27,6 +29,27 @@ pub struct DetectionFeatures {
     pub autocorrelation: Option<AutocorrelationResult>,
     pub pos_entropy: Option<PosEntropyResult>,
     pub interaction: Option<InteractionResult>,
+    /// Tier 2 structural features (6 features, d ≈ 0.4-0.6).
+    pub tier2: Option<Tier2Result>,
+    /// Tier 3-5 advanced features (13 features, d ≈ 0.15-0.45).
+    pub advanced: Option<AdvancedFeatureResult>,
+}
+
+impl DetectionFeatures {
+    /// Count how many features were successfully extracted.
+    /// Interaction counts as 2 (diversity-length + repetition-position).
+    pub fn feature_count(&self) -> usize {
+        let mut count = 0;
+        if self.burstiness.is_some() { count += 1; }
+        if self.zipf.is_some() { count += 1; }
+        if self.hedge_ratio.is_some() { count += 1; }
+        if self.autocorrelation.is_some() { count += 1; }
+        if self.pos_entropy.is_some() { count += 1; }
+        if self.interaction.is_some() { count += 2; }
+        if let Some(ref t2) = self.tier2 { count += t2.features_computed; }
+        if let Some(ref adv) = self.advanced { count += adv.features_computed; }
+        count
+    }
 }
 
 /// Individual feature score with its contribution weight and explanation.
@@ -273,6 +296,185 @@ pub fn score(features: &DetectionFeatures, register: &Register) -> DetectionScor
         });
     }
 
+    // 8-13. Tier 2 structural features (lower weight, ensemble strengtheners)
+    if let Some(ref t2) = features.tier2 {
+        let t2_weight = 0.03; // Each Tier 2 feature gets small weight
+
+        if let Some(passive) = t2.passive_clustering {
+            // Lower variance = more uniform = more AI-like
+            let normalized = sigmoid_score(passive, 0.01, -50.0);
+            weighted_sum += normalized * t2_weight;
+            total_weight += t2_weight;
+            feature_scores.push(FeatureScore {
+                name: "Passive voice clustering".to_string(),
+                raw_value: passive, normalized_score: normalized,
+                weight: t2_weight, weighted_contribution: normalized * t2_weight,
+                explanation: format!("Passive voice distribution variance: {:.4} (lower = more uniform = more AI-like)", passive),
+            });
+        }
+
+        if let Some(transition) = t2.transition_density {
+            // Higher density = more connectives = more AI-like
+            let normalized = sigmoid_score(transition, 15.0, 0.3);
+            weighted_sum += normalized * t2_weight;
+            total_weight += t2_weight;
+            feature_scores.push(FeatureScore {
+                name: "Transition word density".to_string(),
+                raw_value: transition, normalized_score: normalized,
+                weight: t2_weight, weighted_contribution: normalized * t2_weight,
+                explanation: format!("Transition words per 1000: {:.1} (AI tends to over-use connectives)", transition),
+            });
+        }
+
+        if let Some(cv) = t2.paragraph_length_cv {
+            // Lower CV = more uniform = more AI-like
+            let normalized = sigmoid_score(cv, 0.40, -5.0);
+            weighted_sum += normalized * t2_weight;
+            total_weight += t2_weight;
+            feature_scores.push(FeatureScore {
+                name: "Paragraph length uniformity".to_string(),
+                raw_value: cv, normalized_score: normalized,
+                weight: t2_weight, weighted_contribution: normalized * t2_weight,
+                explanation: format!("Paragraph length CV: {:.3} (lower = more uniform = more AI-like)", cv),
+            });
+        }
+
+        if let Some(diversity) = t2.sentence_opening_diversity {
+            // Lower diversity = more AI-like
+            let normalized = sigmoid_score(diversity, 0.50, -5.0);
+            weighted_sum += normalized * t2_weight;
+            total_weight += t2_weight;
+            feature_scores.push(FeatureScore {
+                name: "Sentence opening diversity".to_string(),
+                raw_value: diversity, normalized_score: normalized,
+                weight: t2_weight, weighted_contribution: normalized * t2_weight,
+                explanation: format!("Unique sentence openers: {:.2} (lower = less diverse = more AI-like)", diversity),
+            });
+        }
+
+        if let Some(nested) = t2.nested_clause_ratio {
+            // Lower nested ratio = simpler syntax = more AI-like
+            let normalized = sigmoid_score(nested, 0.25, -5.0);
+            weighted_sum += normalized * t2_weight;
+            total_weight += t2_weight;
+            feature_scores.push(FeatureScore {
+                name: "Nested clause frequency".to_string(),
+                raw_value: nested, normalized_score: normalized,
+                weight: t2_weight, weighted_contribution: normalized * t2_weight,
+                explanation: format!("Nested clause ratio: {:.3} (AI produces fewer deeply nested clauses)", nested),
+            });
+        }
+
+        if let Some(splice) = t2.comma_splice_ratio {
+            // Near zero = more AI-like (AI avoids comma splices)
+            let normalized = sigmoid_score(splice, 0.01, -100.0);
+            weighted_sum += normalized * t2_weight;
+            total_weight += t2_weight;
+            feature_scores.push(FeatureScore {
+                name: "Comma splice avoidance".to_string(),
+                raw_value: splice, normalized_score: normalized,
+                weight: t2_weight, weighted_contribution: normalized * t2_weight,
+                explanation: format!("Comma splice ratio: {:.4} (AI almost never produces comma splices)", splice),
+            });
+        }
+    }
+
+    // 14+. Tier 3-5 advanced features (smallest individual weights)
+    if let Some(ref adv) = features.advanced {
+        let adv_weight = 0.02;
+
+        if let Some(slope) = adv.vocab_sophistication_slope {
+            // Near-zero slope = flat vocabulary = more AI-like
+            let normalized = sigmoid_score(slope.abs(), 0.03, -30.0);
+            weighted_sum += normalized * adv_weight;
+            total_weight += adv_weight;
+            feature_scores.push(FeatureScore {
+                name: "Vocabulary sophistication curve".to_string(),
+                raw_value: slope, normalized_score: normalized,
+                weight: adv_weight, weighted_contribution: normalized * adv_weight,
+                explanation: format!("Vocab sophistication slope: {:.4} (flat = AI-like, human increases)", slope),
+            });
+        }
+
+        if let Some(reg_cv) = adv.register_consistency {
+            // Lower variance = more consistent = more AI-like
+            let normalized = sigmoid_score(reg_cv, 0.02, -30.0);
+            weighted_sum += normalized * adv_weight;
+            total_weight += adv_weight;
+            feature_scores.push(FeatureScore {
+                name: "Register consistency".to_string(),
+                raw_value: reg_cv, normalized_score: normalized,
+                weight: adv_weight, weighted_contribution: normalized * adv_weight,
+                explanation: format!("Register variance: {:.4} (lower = more uniform = more AI-like)", reg_cv),
+            });
+        }
+
+        if let Some(ratio) = adv.initial_adverb_ratio {
+            // Higher ratio = more AI-like
+            let normalized = sigmoid_score(ratio, 0.08, 15.0);
+            weighted_sum += normalized * adv_weight;
+            total_weight += adv_weight;
+            feature_scores.push(FeatureScore {
+                name: "Sentence-initial adverb ratio".to_string(),
+                raw_value: ratio, normalized_score: normalized,
+                weight: adv_weight, weighted_contribution: normalized * adv_weight,
+                explanation: format!("Initial adverb ratio: {:.3} (AI favors sentence-initial adverbs)", ratio),
+            });
+        }
+
+        if let Some(density) = adv.modal_density {
+            // Higher modal density = more AI-like
+            let normalized = sigmoid_score(density, 12.0, 0.2);
+            weighted_sum += normalized * adv_weight;
+            total_weight += adv_weight;
+            feature_scores.push(FeatureScore {
+                name: "Modal verb density".to_string(),
+                raw_value: density, normalized_score: normalized,
+                weight: adv_weight, weighted_contribution: normalized * adv_weight,
+                explanation: format!("Modal verbs per 1000 words: {:.1} (AI over-uses modals)", density),
+            });
+        }
+
+        if let Some(punct) = adv.punctuation_diversity {
+            // Lower entropy = less diverse = more AI-like
+            let normalized = sigmoid_score(punct, 2.0, -2.0);
+            weighted_sum += normalized * adv_weight;
+            total_weight += adv_weight;
+            feature_scores.push(FeatureScore {
+                name: "Punctuation diversity".to_string(),
+                raw_value: punct, normalized_score: normalized,
+                weight: adv_weight, weighted_contribution: normalized * adv_weight,
+                explanation: format!("Punctuation entropy: {:.2} bits (lower = less diverse = more AI-like)", punct),
+            });
+        }
+
+        if let Some(enum_r) = adv.enumeration_ratio {
+            // Higher enumeration = more AI-like
+            let normalized = sigmoid_score(enum_r, 0.10, 15.0);
+            weighted_sum += normalized * adv_weight;
+            total_weight += adv_weight;
+            feature_scores.push(FeatureScore {
+                name: "Enumeration patterns".to_string(),
+                raw_value: enum_r, normalized_score: normalized,
+                weight: adv_weight, weighted_contribution: normalized * adv_weight,
+                explanation: format!("Enumeration ratio: {:.3} (AI over-uses lists and numbering)", enum_r),
+            });
+        }
+
+        if let Some(overlap) = adv.paragraph_transition_overlap {
+            // Lower overlap = less coherent transitions = more AI-like
+            let normalized = sigmoid_score(overlap, 0.08, -10.0);
+            weighted_sum += normalized * adv_weight;
+            total_weight += adv_weight;
+            feature_scores.push(FeatureScore {
+                name: "Paragraph transition coherence".to_string(),
+                raw_value: overlap, normalized_score: normalized,
+                weight: adv_weight, weighted_contribution: normalized * adv_weight,
+                explanation: format!("Lexical overlap between paragraphs: {:.3} (lower = AI-like topic jumps)", overlap),
+            });
+        }
+    }
+
     // Compute raw composite score
     let raw_score = if total_weight > 0.0 {
         (weighted_sum / total_weight).clamp(0.0, 1.0)
@@ -372,6 +574,8 @@ mod tests {
             autocorrelation: None,
             pos_entropy: None,
             interaction: None,
+            tier2: None,
+            advanced: None,
         };
         let register = Register::Casual(crate::analysis::register::CasualSubtype::BlogPost);
         let result = score(&features, &register);
