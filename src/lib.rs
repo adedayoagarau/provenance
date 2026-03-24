@@ -13,6 +13,7 @@ pub mod utils;
 pub mod ml;
 pub mod data;
 pub mod capture;
+pub mod detection;
 pub mod adversarial;
 pub mod api;
 pub mod enterprise;
