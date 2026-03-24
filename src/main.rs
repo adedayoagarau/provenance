@@ -164,11 +164,15 @@ enum Commands {
         format: String,
     },
 
-    /// Detect AI-generated writing in a document (no author profile needed)
+    /// Detect AI-generated writing in a document (auto-selects mode based on profile)
     Detect {
         /// Path to the document to analyze
         #[arg(short, long)]
         file: String,
+
+        /// Path to an author profile for hybrid/verification mode (optional)
+        #[arg(short, long)]
+        profile: Option<String>,
 
         /// Output format: text, json
         #[arg(long, default_value = "text")]
@@ -353,12 +357,15 @@ fn main() -> anyhow::Result<()> {
             let report = provenance::adversarial_report(output_format)?;
             println!("{report}");
         }
-        Commands::Detect { file, format } => {
+        Commands::Detect { file, profile, format } => {
             info!(file = %file, "Running AI detection analysis");
-            let result = provenance::detection::detect_file(&file)?;
+            let result = provenance::detection::modes::analyze_multimode_file(
+                &file,
+                profile.as_deref(),
+            )?;
             let output = match format.as_str() {
-                "json" => provenance::detection::format_json(&result),
-                _ => provenance::detection::format_text(&result),
+                "json" => provenance::detection::modes::format_json(&result),
+                _ => provenance::detection::modes::format_text(&result),
             };
             println!("{output}");
         }

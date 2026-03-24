@@ -38,6 +38,9 @@ pub mod template;
 pub mod editing_tools;
 pub mod countermeasures;
 pub mod explanation;
+pub mod tier2_features;
+pub mod advanced_features;
+pub mod modes;
 
 use serde::{Deserialize, Serialize};
 
@@ -49,6 +52,7 @@ pub use scoring::{DetectionFeatures, DetectionScore, DetectionTier};
 pub use heatmap::HeatmapResult;
 pub use countermeasures::CountermeasureReport;
 pub use explanation::DetectionExplanation;
+pub use modes::{AnalysisMode, MultiModeResult};
 
 /// Minimum word count for AI detection analysis.
 const MIN_WORDS: usize = 500;
@@ -180,9 +184,15 @@ pub(crate) fn extract_features(text: &str) -> DetectionFeatures {
         || rayon::join(|| zipf::analyze(text), || hedge_ratio::analyze(text)),
     );
 
-    let (autocorrelation, (pos_entropy, interaction)) = rayon::join(
-        || autocorrelation::analyze(text),
-        || rayon::join(|| pos_entropy::analyze(text), || interaction::analyze(text)),
+    let ((autocorrelation, (pos_entropy, interaction)), (tier2, advanced)) = rayon::join(
+        || rayon::join(
+            || autocorrelation::analyze(text),
+            || rayon::join(|| pos_entropy::analyze(text), || interaction::analyze(text)),
+        ),
+        || rayon::join(
+            || Some(tier2_features::analyze(text)),
+            || Some(advanced_features::analyze(text)),
+        ),
     );
 
     DetectionFeatures {
@@ -192,6 +202,8 @@ pub(crate) fn extract_features(text: &str) -> DetectionFeatures {
         autocorrelation,
         pos_entropy,
         interaction,
+        tier2,
+        advanced,
     }
 }
 
