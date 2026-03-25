@@ -41,6 +41,8 @@ pub mod explanation;
 pub mod tier2_features;
 pub mod advanced_features;
 pub mod modes;
+#[cfg(feature = "onnx")]
+pub mod ml_scoring;
 
 use serde::{Deserialize, Serialize};
 
@@ -112,7 +114,22 @@ pub fn detect(text: &str) -> Result<DetectionResult> {
     let analysis_result = analysis::analyze_text(scoring_text)?;
     let register_class = register::classify(&analysis_result);
 
-    // Phase 5: Score with register normalization
+    // Phase 5: Score — use ML ensemble if available, otherwise weighted sigmoid
+    #[cfg(feature = "onnx")]
+    let ml_score = {
+        let models_dir = std::path::Path::new("models");
+        if ml_scoring::ml_models_available(models_dir) {
+            ml_scoring::MlScorer::try_load(models_dir)
+                .and_then(|scorer| scorer.score(&final_features).ok())
+        } else {
+            None
+        }
+    };
+
+    #[cfg(feature = "onnx")]
+    let mut score = ml_score.unwrap_or_else(|| scoring::score(&final_features, &register_class.primary));
+
+    #[cfg(not(feature = "onnx"))]
     let mut score = scoring::score(&final_features, &register_class.primary);
 
     // Phase 6: Apply countermeasure adjustments

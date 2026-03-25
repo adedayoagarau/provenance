@@ -1,0 +1,18 @@
+{
+  "ensemble_weights": {
+    "xgboost": 0.7,
+    "neural_net": 0.2,
+    "svm": 0.1
+  },
+  "threshold": 0.5,
+  "target_fpr": 0.02,
+  "n_features": 75,
+  "models": [
+    "xgboost.onnx",
+    "neural_net.onnx",
+    "svm.onnx"
+  ],
+  "feature_names_file": "feature_names.json",
+  "normalization_file": "normalization.json",
+  "calibration_file": "calibration.json"
+}

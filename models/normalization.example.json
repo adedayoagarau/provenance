@@ -1,0 +1,11 @@
+{
+  "features": {
+    "burstiness_coefficient": { "mean": 0.30, "std": 0.12 },
+    "zipf_deviation": { "mean": 0.10, "std": 0.05 },
+    "hedge_ratio": { "mean": 1.05, "std": 0.35 },
+    "autocorrelation_lag1": { "mean": 0.05, "std": 0.08 },
+    "pos_trigram_entropy": { "mean": 4.70, "std": 0.40 },
+    "diversity_length_correlation": { "mean": 0.10, "std": 0.15 },
+    "repetition_position_delta": { "mean": 0.05, "std": 0.04 }
+  }
+}
