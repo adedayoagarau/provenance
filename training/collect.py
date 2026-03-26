@@ -594,47 +594,45 @@ class LegalCollector(BaseCollector):
 
 
 class AITextGenerator:
-    """Generate AI text via OpenRouter across multiple models.
+    """Generate AI text via local Ollama models (free, no API keys).
 
     Implements the prompting matrix:
       30% zero-shot, 25% few-shot, 20% persona,
       15% anti-detection, 10% chain-of-thought.
-    """
 
-    OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+    Requires: ollama running locally (brew services start ollama)
+    Models: ollama pull llama3 && ollama pull mistral && ollama pull gemma2
+    """
 
     def __init__(self, target_count: int):
         self.target_count = target_count
         self.generated = 0
-        if not config.OPENROUTER_API_KEY:
-            logger.warning("OPENROUTER_API_KEY not set — AI generation will fail")
+        self.ollama_url = f"{config.OLLAMA_BASE_URL}/api/chat"
 
-    def _call_openrouter(self, model: str, messages: list[dict]) -> str | None:
-        """Make a single API call to OpenRouter."""
-        headers = {
-            "Authorization": f"Bearer {config.OPENROUTER_API_KEY}",
-            "Content-Type": "application/json",
-        }
+    def _call_ollama(self, model: str, messages: list[dict]) -> str | None:
+        """Make a single call to the local Ollama server."""
         payload = {
             "model": model,
             "messages": messages,
-            "max_tokens": 2000,
-            "temperature": 0.9,
+            "stream": False,
+            "options": {
+                "temperature": 0.9,
+                "num_predict": 2000,
+            },
         }
 
         for attempt in range(3):
             try:
                 resp = requests.post(
-                    self.OPENROUTER_URL,
-                    headers=headers,
+                    self.ollama_url,
                     json=payload,
-                    timeout=60,
+                    timeout=120,  # Local models can be slow
                 )
                 resp.raise_for_status()
                 data = resp.json()
-                content = data["choices"][0]["message"]["content"]
+                content = data.get("message", {}).get("content", "")
                 return content
-            except (requests.RequestException, KeyError, IndexError) as e:
+            except (requests.RequestException, KeyError) as e:
                 logger.warning("[ai_gen] Attempt %d failed for %s: %s", attempt + 1, model, e)
                 time.sleep(2 ** attempt)
 
@@ -702,77 +700,63 @@ class AITextGenerator:
                 break
 
             messages = self._build_prompt(ptype, register, topic)
-            text = self._call_openrouter(model, messages)
+            text = self._call_ollama(model, messages)
 
             if text and len(text.split()) >= 100:
-                short_model = model.split("/")[-1]
                 yield make_record(
-                    text, "ai", f"openrouter/{short_model}", register,
+                    text, "ai", f"ollama/{model}", register,
                     model=model, prompt_type=ptype,
                 )
                 self.generated += 1
-
-            time.sleep(0.5)  # Rate limiting
 
 
 # ─── Humanizer Pipeline ──────────────────────────────────────────────────────
 
 
 class HumanizerPipeline:
-    """Run AI-generated text through humanizer tools.
+    """Run AI-generated text through local Ollama paraphrasing.
 
-    Processes a subset of AI samples through QuillBot and Undetectable.ai
-    to create adversarial training data.
+    Processes a subset of AI samples by asking a local model to
+    rewrite them in a more human-like style. Free, no API keys needed.
+
+    Uses varied paraphrasing prompts to create diverse adversarial samples.
     """
+
+    PARAPHRASE_PROMPTS = [
+        "Rewrite the following text in your own words. Keep the same meaning but change the writing style, sentence structure, and word choices. Make it sound like a different person wrote it:\n\n{text}",
+        "Paraphrase this text to sound more natural and human. Vary the sentence lengths, add some informality, and rephrase key points:\n\n{text}",
+        "Rewrite this text as if you were a college student writing casually. Keep the core ideas but change the tone and structure:\n\n{text}",
+        "Take this text and rewrite it with a completely different writing style. Use different vocabulary, restructure paragraphs, and vary the rhythm:\n\n{text}",
+        "Rephrase this entire text to make it sound more authentic and personal. Add transitions, vary sentence complexity, and use more natural phrasing:\n\n{text}",
+    ]
 
     def __init__(self, target_count: int):
         self.target_count = target_count
         self.processed = 0
+        self.ollama_url = f"{config.OLLAMA_BASE_URL}/api/chat"
 
-    def _quillbot_paraphrase(self, text: str) -> str | None:
-        """Paraphrase text via QuillBot API."""
-        if not config.QUILLBOT_API_KEY:
-            logger.debug("[humanizer] QuillBot API key not set, skipping")
-            return None
+    def _paraphrase(self, text: str) -> str | None:
+        """Paraphrase text using a local Ollama model."""
+        prompt = random.choice(self.PARAPHRASE_PROMPTS).format(text=text[:4000])
 
-        # QuillBot API endpoint (placeholder — actual API may differ)
-        try:
-            resp = requests.post(
-                "https://api.quillbot.com/v1/paraphrase",
-                headers={"Authorization": f"Bearer {config.QUILLBOT_API_KEY}"},
-                json={"text": text[:5000], "mode": "standard"},
-                timeout=30,
-            )
-            resp.raise_for_status()
-            return resp.json().get("paraphrased_text", "")
-        except requests.RequestException as e:
-            logger.warning("[humanizer] QuillBot error: %s", e)
-            return None
-
-    def _undetectable_rewrite(self, text: str) -> str | None:
-        """Rewrite text via Undetectable.ai API."""
-        if not config.UNDETECTABLE_API_KEY:
-            logger.debug("[humanizer] Undetectable.ai API key not set, skipping")
-            return None
+        payload = {
+            "model": config.HUMANIZER_MODEL,
+            "messages": [{"role": "user", "content": prompt}],
+            "stream": False,
+            "options": {"temperature": 0.8, "num_predict": 2000},
+        }
 
         try:
-            resp = requests.post(
-                "https://api.undetectable.ai/v1/rewrite",
-                headers={"Authorization": f"Bearer {config.UNDETECTABLE_API_KEY}"},
-                json={"text": text[:5000], "readability": "high_school"},
-                timeout=60,
-            )
+            resp = requests.post(self.ollama_url, json=payload, timeout=120)
             resp.raise_for_status()
-            return resp.json().get("rewritten_text", "")
-        except requests.RequestException as e:
-            logger.warning("[humanizer] Undetectable.ai error: %s", e)
+            data = resp.json()
+            return data.get("message", {}).get("content", "")
+        except (requests.RequestException, KeyError) as e:
+            logger.warning("[humanizer] Ollama paraphrase error: %s", e)
             return None
 
     def humanize(self, ai_docs_path: Path) -> Iterator[dict]:
-        """Read AI documents and pass through humanizers.
-
-        Alternates between QuillBot and Undetectable.ai.
-        """
+        """Read AI documents and paraphrase them via Ollama."""
         if not ai_docs_path.exists():
             logger.error("[humanizer] AI docs file not found: %s", ai_docs_path)
             return
@@ -784,9 +768,7 @@ class HumanizerPipeline:
         if len(lines) > self.target_count:
             lines = random.sample(lines, self.target_count)
 
-        tools = [self._quillbot_paraphrase, self._undetectable_rewrite]
-
-        for line in tqdm(lines, desc="Humanizing AI text"):
+        for line in tqdm(lines, desc="Humanizing AI text (Ollama)"):
             if self.processed >= self.target_count:
                 break
 
@@ -799,23 +781,17 @@ class HumanizerPipeline:
             if not text:
                 continue
 
-            # Alternate humanizer tools
-            tool = tools[self.processed % len(tools)]
-            tool_name = "quillbot" if self.processed % 2 == 0 else "undetectable_ai"
-
-            humanized = tool(text)
+            humanized = self._paraphrase(text)
             if humanized and len(humanized.split()) >= 100:
                 yield make_record(
                     humanized,
                     "humanized",
-                    f"humanized/{tool_name}",
+                    f"humanized/ollama_{config.HUMANIZER_MODEL}",
                     doc.get("register", "mixed"),
                     model=doc.get("model", ""),
                     prompt_type=doc.get("prompt_type", ""),
                 )
                 self.processed += 1
-
-            time.sleep(1)
 
 
 # ─── Main Pipeline Orchestrator ───────────────────────────────────────────────
@@ -932,20 +908,22 @@ def run_dry_run():
     for c in collectors:
         results[c.name] = c.dry_run()
 
-    # Check OpenRouter
-    if config.OPENROUTER_API_KEY:
-        try:
-            resp = requests.get(
-                "https://openrouter.ai/api/v1/models",
-                headers={"Authorization": f"Bearer {config.OPENROUTER_API_KEY}"},
-                timeout=10,
-            )
-            results["openrouter"] = resp.status_code == 200
-        except requests.RequestException:
-            results["openrouter"] = False
-    else:
-        results["openrouter"] = False
-        logger.warning("[openrouter] No API key configured")
+    # Check Ollama
+    try:
+        resp = requests.get(f"{config.OLLAMA_BASE_URL}/api/tags", timeout=10)
+        if resp.status_code == 200:
+            models = [m["name"] for m in resp.json().get("models", [])]
+            available = [m for m in config.AI_MODELS if any(m in name for name in models)]
+            results["ollama"] = len(available) > 0
+            if available:
+                logger.info("[ollama] OK — models available: %s", ", ".join(available))
+            else:
+                logger.warning("[ollama] Server running but no required models found. Run: ollama pull llama3 && ollama pull mistral && ollama pull gemma2")
+        else:
+            results["ollama"] = False
+    except requests.RequestException:
+        results["ollama"] = False
+        logger.warning("[ollama] Not running. Start with: brew services start ollama")
 
     logger.info("=" * 60)
     logger.info("DRY RUN RESULTS:")
