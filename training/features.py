@@ -271,17 +271,24 @@ def extract_all(
     """
     # Load documents
     logger.info("Loading documents from %s...", input_path)
-    docs = []
+    all_docs = []
     with open(input_path, "r") as f:
         for line in f:
             try:
-                docs.append(json.loads(line))
+                all_docs.append(json.loads(line))
             except json.JSONDecodeError:
                 continue
-            if sample and len(docs) >= sample:
-                break
 
-    logger.info("Loaded %d documents", len(docs))
+    # Filter to docs with enough words for provenance (minimum 500)
+    all_docs = [d for d in all_docs if len(d.get("text", "").split()) >= 500]
+    logger.info("Found %d documents with 500+ words", len(all_docs))
+
+    if sample and len(all_docs) > sample:
+        import random
+        all_docs = random.sample(all_docs, sample)
+
+    docs = all_docs
+    logger.info("Processing %d documents", len(docs))
 
     # Extract features in parallel
     logger.info("Extracting features with %d workers...", workers)
