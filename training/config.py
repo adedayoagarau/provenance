@@ -26,13 +26,11 @@ for d in [RAW_DIR, PROCESSED_DIR, FEATURES_CACHE_DIR, MODELS_DIR, RESULTS_DIR]:
 
 # ─── API Keys (from environment) ─────────────────────────────────────────────
 
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 REDDIT_CLIENT_ID = os.environ.get("REDDIT_CLIENT_ID", "")
 REDDIT_CLIENT_SECRET = os.environ.get("REDDIT_CLIENT_SECRET", "")
 REDDIT_USER_AGENT = os.environ.get("REDDIT_USER_AGENT", "provenance-collector/1.0")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
-QUILLBOT_API_KEY = os.environ.get("QUILLBOT_API_KEY", "")
-UNDETECTABLE_API_KEY = os.environ.get("UNDETECTABLE_API_KEY", "")
 
 # ─── Data Collection Targets ─────────────────────────────────────────────────
 
@@ -51,14 +49,12 @@ HUMAN_SOURCES = {
     "legal": 0.05,         # Legal filings — court documents
 }
 
-# AI model distribution (equal split across models)
+# AI models — local Ollama models (free, no API keys needed)
+# Pull these first: ollama pull llama3 && ollama pull mistral && ollama pull gemma2
 AI_MODELS = [
-    "openai/gpt-4",
-    "anthropic/claude-3-sonnet",
-    "google/gemini-pro",
-    "meta-llama/llama-3-70b-instruct",
-    "mistralai/mistral-large",
-    "openai/gpt-3.5-turbo",
+    "llama3",
+    "mistral",
+    "gemma2",
 ]
 
 # Prompting strategy distribution (fractions of AI_TARGET)
@@ -70,8 +66,8 @@ PROMPT_TYPES = {
     "chain_of_thought": 0.10,
 }
 
-# Humanizer tools for adversarial samples
-HUMANIZER_TOOLS = ["quillbot", "undetectable_ai"]
+# Humanizer — uses Ollama to paraphrase (free, local)
+HUMANIZER_MODEL = "mistral"  # Model used for paraphrasing
 
 # ─── Register Labels ─────────────────────────────────────────────────────────
 
