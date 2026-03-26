@@ -626,7 +626,7 @@ class AITextGenerator:
                 resp = requests.post(
                     self.ollama_url,
                     json=payload,
-                    timeout=120,  # Local models can be slow
+                    timeout=300,  # Local models can be slow on CPU
                 )
                 resp.raise_for_status()
                 data = resp.json()
@@ -747,7 +747,7 @@ class HumanizerPipeline:
         }
 
         try:
-            resp = requests.post(self.ollama_url, json=payload, timeout=120)
+            resp = requests.post(self.ollama_url, json=payload, timeout=300)
             resp.raise_for_status()
             data = resp.json()
             return data.get("message", {}).get("content", "")
@@ -848,8 +848,8 @@ def run_collection(args):
         human_count = count_lines(human_path)
         logger.info("Human collection complete: %d documents", human_count)
 
-    # Phase 2: Generate AI documents
-    if not args.humanize_only:
+    # Phase 2: Generate AI documents (skip when collecting a specific human source)
+    if not args.humanize_only and not args.source:
         logger.info("=" * 60)
         logger.info("PHASE 2: AI Text Generation")
         logger.info("=" * 60)
@@ -866,7 +866,11 @@ def run_collection(args):
         ai_count = count_lines(ai_path)
         logger.info("AI generation complete: %d documents", ai_count)
 
-    # Phase 3: Humanize AI samples
+    # Phase 3: Humanize AI samples (skip when collecting a specific human source)
+    if args.source:
+        logger.info("Skipping humanizer (single source mode)")
+        return
+
     logger.info("=" * 60)
     logger.info("PHASE 3: Humanizer Pipeline")
     logger.info("=" * 60)
