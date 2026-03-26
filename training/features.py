@@ -88,12 +88,20 @@ def _run_provenance_detect(text: str) -> dict | None:
         Path(tmp_path).unlink(missing_ok=True)
 
         if result.returncode != 0:
+            logger.warning("detect returned %d: %s", result.returncode, result.stderr[:200])
             return None
 
-        return json.loads(result.stdout)
+        data = json.loads(result.stdout)
+
+        # The CLI wraps output in a multi-mode envelope:
+        # {"mode": "AiDetection", "detection": {"score": {...}, "features": {...}}}
+        # Unwrap to get the detection result directly.
+        if "detection" in data:
+            return data["detection"]
+        return data
 
     except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError) as e:
-        logger.debug("detect failed: %s", e)
+        logger.warning("detect failed: %s", e)
         return None
 
 
@@ -116,12 +124,13 @@ def _run_provenance_analyze(text: str) -> dict | None:
         Path(tmp_path).unlink(missing_ok=True)
 
         if result.returncode != 0:
+            logger.warning("analyze returned %d: %s", result.returncode, result.stderr[:200])
             return None
 
         return json.loads(result.stdout)
 
     except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError) as e:
-        logger.debug("analyze failed: %s", e)
+        logger.warning("analyze failed: %s", e)
         return None
 
 
