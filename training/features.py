@@ -88,7 +88,11 @@ def _run_provenance_detect(text: str) -> dict | None:
         Path(tmp_path).unlink(missing_ok=True)
 
         if result.returncode != 0:
-            logger.warning("detect returned %d: %s", result.returncode, result.stderr[:200])
+            logger.warning("detect returned %d: %s", result.returncode, result.stderr[:500])
+            return None
+
+        if not result.stdout.strip():
+            logger.warning("detect returned empty stdout. stderr: %s", result.stderr[:500])
             return None
 
         data = json.loads(result.stdout)
@@ -124,7 +128,11 @@ def _run_provenance_analyze(text: str) -> dict | None:
         Path(tmp_path).unlink(missing_ok=True)
 
         if result.returncode != 0:
-            logger.warning("analyze returned %d: %s", result.returncode, result.stderr[:200])
+            logger.warning("analyze returned %d: %s", result.returncode, result.stderr[:500])
+            return None
+
+        if not result.stdout.strip():
+            logger.warning("analyze returned empty stdout. stderr: %s", result.stderr[:500])
             return None
 
         return json.loads(result.stdout)
