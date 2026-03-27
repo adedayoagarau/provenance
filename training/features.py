@@ -95,7 +95,15 @@ def _run_provenance_detect(text: str) -> dict | None:
             logger.warning("detect returned empty stdout. stderr: %s", result.stderr[:500])
             return None
 
-        data = json.loads(result.stdout)
+        # The provenance binary prints INFO log lines to stdout before
+        # the JSON output. Strip everything before the first '{'.
+        stdout = result.stdout
+        json_start = stdout.find("{")
+        if json_start == -1:
+            logger.warning("detect: no JSON found in stdout: %s", stdout[:200])
+            return None
+
+        data = json.loads(stdout[json_start:])
 
         # The CLI wraps output in a multi-mode envelope:
         # {"mode": "AiDetection", "detection": {"score": {...}, "features": {...}}}
@@ -135,7 +143,14 @@ def _run_provenance_analyze(text: str) -> dict | None:
             logger.warning("analyze returned empty stdout. stderr: %s", result.stderr[:500])
             return None
 
-        return json.loads(result.stdout)
+        # Strip INFO log lines before the JSON
+        stdout = result.stdout
+        json_start = stdout.find("{")
+        if json_start == -1:
+            logger.warning("analyze: no JSON found in stdout: %s", stdout[:200])
+            return None
+
+        return json.loads(stdout[json_start:])
 
     except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError) as e:
         logger.warning("analyze failed: %s", e)
