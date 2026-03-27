@@ -225,24 +225,37 @@ def extract_single(doc: dict) -> dict[str, float] | None:
     Returns a flat dict mapping feature names to values, or None on failure.
     """
     text = doc.get("text", "")
-    if len(text.split()) < 500:
+    word_count = len(text.split())
+    if word_count < 500:
+        print(f"  SKIP: doc has {word_count} words (need 500+)", flush=True)
         return None
 
+    print(f"  Processing doc ({word_count} words, source={doc.get('source', '?')})...", flush=True)
     features = {}
 
     # Detection features (tier-1 through advanced)
     detect_result = _run_provenance_detect(text)
     if detect_result:
-        features.update(_extract_detection_features(detect_result))
+        det_features = _extract_detection_features(detect_result)
+        features.update(det_features)
+        print(f"    detect: {len(det_features)} features", flush=True)
+    else:
+        print(f"    detect: FAILED", flush=True)
 
     # Stylometric features (740+)
     analyze_result = _run_provenance_analyze(text)
     if analyze_result:
-        features.update(_extract_stylometric_features(analyze_result))
+        sty_features = _extract_stylometric_features(analyze_result)
+        features.update(sty_features)
+        print(f"    analyze: {len(sty_features)} features", flush=True)
+    else:
+        print(f"    analyze: FAILED", flush=True)
 
     if not features:
+        print(f"    RESULT: no features extracted", flush=True)
         return None
 
+    print(f"    RESULT: {len(features)} total features", flush=True)
     return features
 
 
@@ -271,17 +284,24 @@ def extract_all(
     """
     # Load documents
     logger.info("Loading documents from %s...", input_path)
-    docs = []
+    all_docs = []
     with open(input_path, "r") as f:
         for line in f:
             try:
-                docs.append(json.loads(line))
+                all_docs.append(json.loads(line))
             except json.JSONDecodeError:
                 continue
-            if sample and len(docs) >= sample:
-                break
 
-    logger.info("Loaded %d documents", len(docs))
+    # Filter to docs with enough words for provenance (minimum 500)
+    all_docs = [d for d in all_docs if len(d.get("text", "").split()) >= 500]
+    logger.info("Found %d documents with 500+ words", len(all_docs))
+
+    if sample and len(all_docs) > sample:
+        import random
+        all_docs = random.sample(all_docs, sample)
+
+    docs = all_docs
+    logger.info("Processing %d documents", len(docs))
 
     # Extract features in parallel
     logger.info("Extracting features with %d workers...", workers)
