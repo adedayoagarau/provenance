@@ -225,24 +225,37 @@ def extract_single(doc: dict) -> dict[str, float] | None:
     Returns a flat dict mapping feature names to values, or None on failure.
     """
     text = doc.get("text", "")
-    if len(text.split()) < 500:
+    word_count = len(text.split())
+    if word_count < 500:
+        print(f"  SKIP: doc has {word_count} words (need 500+)", flush=True)
         return None
 
+    print(f"  Processing doc ({word_count} words, source={doc.get('source', '?')})...", flush=True)
     features = {}
 
     # Detection features (tier-1 through advanced)
     detect_result = _run_provenance_detect(text)
     if detect_result:
-        features.update(_extract_detection_features(detect_result))
+        det_features = _extract_detection_features(detect_result)
+        features.update(det_features)
+        print(f"    detect: {len(det_features)} features", flush=True)
+    else:
+        print(f"    detect: FAILED", flush=True)
 
     # Stylometric features (740+)
     analyze_result = _run_provenance_analyze(text)
     if analyze_result:
-        features.update(_extract_stylometric_features(analyze_result))
+        sty_features = _extract_stylometric_features(analyze_result)
+        features.update(sty_features)
+        print(f"    analyze: {len(sty_features)} features", flush=True)
+    else:
+        print(f"    analyze: FAILED", flush=True)
 
     if not features:
+        print(f"    RESULT: no features extracted", flush=True)
         return None
 
+    print(f"    RESULT: {len(features)} total features", flush=True)
     return features
 
 
