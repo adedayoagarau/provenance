@@ -134,8 +134,6 @@ pub struct MlScorer {
 
 impl MlScorer {
     /// Try to load the ML scorer from the models directory.
-    ///
-    /// Returns `None` if models are not available (graceful fallback).
     pub fn try_load(models_dir: &Path) -> Option<Self> {
         let config_path = models_dir.join("config.json");
         if !config_path.exists() {
@@ -145,36 +143,29 @@ impl MlScorer {
         let config_str = std::fs::read_to_string(&config_path).ok()?;
         let config: MlScoringConfig = serde_json::from_str(&config_str).ok()?;
 
-        // Load feature names
         let names_path = models_dir.join(&config.feature_names_file);
         let names_str = std::fs::read_to_string(&names_path).ok()?;
         let feature_names: Vec<String> = serde_json::from_str(&names_str).ok()?;
 
-        // Load normalization parameters
         let norm_path = models_dir.join(&config.normalization_file);
         let norm_str = std::fs::read_to_string(&norm_path).ok()?;
         let normalization: NormalizationParams = serde_json::from_str(&norm_str).ok()?;
 
-        // Load calibration parameters
         let cal_path = models_dir.join(&config.calibration_file);
         let cal_str = std::fs::read_to_string(&cal_path).ok()?;
         let calibration: CalibrationParams = serde_json::from_str(&cal_str).ok()?;
 
-        // Load ONNX sessions
         #[cfg(feature = "onnx")]
         let sessions = {
             let mut sessions = Vec::new();
             for model_name in &config.models {
                 let model_path = models_dir.join(model_name);
                 match ort::session::Session::builder()
-                    .and_then(|b: ort::session::SessionBuilder| b.commit_from_file(&model_path))
+                    .and_then(|mut b| b.commit_from_file(&model_path))
                 {
                     Ok(session) => sessions.push(session),
                     Err(e) => {
-                        eprintln!(
-                            "Warning: Failed to load ONNX model '{}': {}",
-                            model_name, e
-                        );
+                        eprintln!("Warning: Failed to load ONNX model '{}': {}", model_name, e);
                         return None;
                     }
                 }
@@ -274,11 +265,10 @@ impl MlScorer {
     /// Run inference through all 3 ONNX models and return ensemble score.
     #[cfg(feature = "onnx")]
     pub fn predict(&self, normalized_features: &[f64]) -> Result<f64> {
-        use ndarray::Array2;
-
-        let input = Array2::from_shape_vec(
+        let input_data: Vec<f32> = normalized_features.iter().map(|&x| x as f32).collect();
+        let input = ndarray::Array2::from_shape_vec(
             (1, normalized_features.len()),
-            normalized_features.iter().map(|&x| x as f32).collect(),
+            input_data,
         )
         .map_err(|e| ProvenanceError::AnalysisError {
             reason: format!("Feature shape error: {e}"),
@@ -293,13 +283,10 @@ impl MlScorer {
         let mut ensemble_score = 0.0;
 
         for (i, session) in self.sessions.iter().enumerate() {
-            let input_value = ort::value::Value::from_array(input.view())
-                .map_err(|e| ProvenanceError::AnalysisError {
-                    reason: format!("ONNX input error for model {i}: {e}"),
-                })?;
-
             let outputs = session
-                .run(ort::inputs![input_value])
+                .run(ort::inputs![input.clone()].map_err(|e| ProvenanceError::AnalysisError {
+                    reason: format!("ONNX input error for model {i}: {e}"),
+                })?)
                 .map_err(|e| ProvenanceError::AnalysisError {
                     reason: format!("ONNX inference error for model {i}: {e}"),
                 })?;
@@ -307,21 +294,16 @@ impl MlScorer {
             // Extract probability score from model output
             let score = if outputs.len() > 1 {
                 // sklearn format: [labels, probabilities]
-                if let Ok(probs) = outputs[1].try_extract_tensor::<f32>() {
-                    let view: ndarray::ArrayViewD<'_, f32> = probs.view();
-                    if view.shape().len() == 2 && view.shape()[1] > 1 {
-                        view[[0, 1]] as f64
-                    } else {
-                        view[[0, 0]] as f64
-                    }
+                if let Ok((shape, probs_data)) = outputs[1].try_extract_raw_tensor::<f32>() {
+                    let n_classes = if shape.len() > 1 { shape[1] as usize } else { 1 };
+                    if n_classes > 1 { probs_data[1] as f64 } else { probs_data[0] as f64 }
                 } else {
-                    0.5 // Fallback
+                    0.5
                 }
             } else {
                 // PyTorch format: single output
-                if let Ok(out) = outputs[0].try_extract_tensor::<f32>() {
-                    let view: ndarray::ArrayViewD<'_, f32> = out.view();
-                    view[[0, 0]] as f64
+                if let Ok((_, data)) = outputs[0].try_extract_raw_tensor::<f32>() {
+                    data[0] as f64
                 } else {
                     0.5
                 }
