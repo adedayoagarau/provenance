@@ -97,16 +97,19 @@ def train_xgboost(
     X_val: np.ndarray,
     y_val: np.ndarray,
     use_optuna: bool = True,
-) -> tuple[xgb.Booster, StandardScaler]:
-    """Train XGBoost with optional Optuna hyperparameter search."""
+) -> tuple:
+    """Train XGBoost with optional Optuna hyperparameter search.
+
+    Uses the sklearn-compatible XGBClassifier API for better stability
+    on Apple Silicon / Python 3.14.
+    """
+    from xgboost import XGBClassifier
+
     logger.info("Training XGBoost...")
 
     scaler = StandardScaler()
     X_train_s = scaler.fit_transform(X_train)
     X_val_s = scaler.transform(X_val)
-
-    dtrain = xgb.DMatrix(X_train_s, label=y_train)
-    dval = xgb.DMatrix(X_val_s, label=y_val)
 
     if use_optuna:
         import optuna
@@ -117,6 +120,7 @@ def train_xgboost(
             params = {
                 "max_depth": trial.suggest_int("max_depth", 4, 8),
                 "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+                "n_estimators": 300,
                 "subsample": trial.suggest_float("subsample", 0.6, 1.0),
                 "colsample_bytree": trial.suggest_float("colsample_bytree", 0.6, 1.0),
                 "reg_alpha": trial.suggest_float("reg_alpha", 1e-3, 10.0, log=True),
@@ -125,17 +129,17 @@ def train_xgboost(
                 "objective": "binary:logistic",
                 "eval_metric": "auc",
                 "verbosity": 0,
+                "random_state": config.RANDOM_SEED,
             }
 
-            model = xgb.train(
-                params, dtrain,
-                num_boost_round=300,
-                evals=[(dval, "val")],
-                early_stopping_rounds=20,
-                verbose_eval=False,
+            model = XGBClassifier(**params)
+            model.fit(
+                X_train_s, y_train,
+                eval_set=[(X_val_s, y_val)],
+                verbose=False,
             )
 
-            preds = model.predict(dval)
+            preds = model.predict_proba(X_val_s)[:, 1]
             return tpr_at_fpr(y_val, preds, target_fpr=0.02)
 
         study = optuna.create_study(direction="maximize")
@@ -144,20 +148,39 @@ def train_xgboost(
         logger.info("Optuna best TPR@2%%FPR: %.4f", study.best_value)
         logger.info("Optuna best params: %s", study.best_params)
 
-        best_params = {**study.best_params, "objective": "binary:logistic", "eval_metric": "auc"}
+        best_params = {
+            **study.best_params,
+            "objective": "binary:logistic",
+            "eval_metric": "auc",
+            "n_estimators": config.XGBOOST_PARAMS["n_estimators"],
+            "random_state": config.RANDOM_SEED,
+            "verbosity": 1,
+        }
     else:
-        best_params = {k: v for k, v in config.XGBOOST_PARAMS.items()}
+        best_params = {
+            "max_depth": config.XGBOOST_PARAMS["max_depth"],
+            "learning_rate": config.XGBOOST_PARAMS["learning_rate"],
+            "n_estimators": config.XGBOOST_PARAMS["n_estimators"],
+            "subsample": config.XGBOOST_PARAMS["subsample"],
+            "colsample_bytree": config.XGBOOST_PARAMS["colsample_bytree"],
+            "reg_alpha": config.XGBOOST_PARAMS["reg_alpha"],
+            "reg_lambda": config.XGBOOST_PARAMS["reg_lambda"],
+            "scale_pos_weight": config.XGBOOST_PARAMS["scale_pos_weight"],
+            "objective": "binary:logistic",
+            "eval_metric": "auc",
+            "random_state": config.RANDOM_SEED,
+            "verbosity": 1,
+        }
 
     # Final training with best params
-    model = xgb.train(
-        best_params, dtrain,
-        num_boost_round=config.XGBOOST_PARAMS["n_estimators"],
-        evals=[(dtrain, "train"), (dval, "val")],
-        early_stopping_rounds=20,
-        verbose_eval=50,
+    model = XGBClassifier(**best_params)
+    model.fit(
+        X_train_s, y_train,
+        eval_set=[(X_train_s, y_train), (X_val_s, y_val)],
+        verbose=50,
     )
 
-    preds = model.predict(dval)
+    preds = model.predict_proba(X_val_s)[:, 1]
     val_tpr = tpr_at_fpr(y_val, preds, target_fpr=0.02)
     val_auc = auc(*roc_curve(y_val, preds)[:2])
 
@@ -302,7 +325,7 @@ def train_svm(
 
 
 def ensemble_predict(
-    xgb_model: xgb.Booster,
+    xgb_model,
     nn_model: ProvenanceNN,
     svm_model: SVC,
     X: np.ndarray,
@@ -312,9 +335,8 @@ def ensemble_predict(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     X_scaled = scaler.transform(X)
 
-    # XGBoost predictions
-    dmatrix = xgb.DMatrix(X_scaled)
-    xgb_preds = xgb_model.predict(dmatrix)
+    # XGBoost predictions (sklearn API)
+    xgb_preds = xgb_model.predict_proba(X_scaled)[:, 1]
 
     # Neural net predictions
     nn_model.eval()
