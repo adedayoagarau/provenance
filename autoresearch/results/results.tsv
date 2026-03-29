@@ -93335,3 +93335,5 @@ timestamp	commit	domain	hypothesis	metric_before	metric_after	delta	memory_mb	du
 2026-03-29T21:10:31.984103+00:00	85666045c	tone_analysis	Formality gradient scoring using lexical density and sentence structure complexity	0.000000	0.000000	+0.000000	0.0	0.0	null	
 2026-03-29T21:10:32.042306+00:00	85666045c	writer_identity	Character trigram frequency profiles are more robust identity features than word-level features	0.200000	0.200000	+0.000000	0.0	0.0	error	Need at least 2 authors
 2026-03-29T21:10:32.107555+00:00	85666045c	adversarial_robustness	Humanizer tools produce detectable collocation breaks	0.000000	0.082569	+0.082569	0.0	0.0	improvement	
+2026-03-29T21:10:32.369118+00:00	61f3fbbe4	cross_linguistic	L1 interference patterns can identify a writer's native language with high accuracy	0.000000	0.000000	+0.000000	0.0	0.0	error	look-behind requires fixed-width pattern
+2026-03-29T21:10:32.430693+00:00	61f3fbbe4	temporal_evolution	Vocabulary growth rate is a reliable indicator of human authorship across time	0.000000	0.890917	+0.890917	0.0	0.0	improvement	
