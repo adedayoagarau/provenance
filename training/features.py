@@ -197,47 +197,88 @@ def _extract_detection_features(detect_result: dict) -> dict[str, float]:
 
 
 def _extract_stylometric_features(analyze_result: dict) -> dict[str, float]:
-    """Parse analyze JSON into a flat feature dict for stylometric features."""
+    """Parse analyze JSON into a flat feature dict for stylometric features.
+
+    The analyze output is a UnifiedScore with features under "analysis_result":
+      analysis_result.lexical — word stats, TTR, MATTR, Yule's K, etc.
+      analysis_result.syntactic — sentence lengths, passive voice, etc.
+      analysis_result.semantic — readability scores, discourse markers
+      analysis_result.stylometric — punctuation, hedges, intensifiers
+      analysis_result.function_words.frequencies — per-1000 word frequencies
+      analysis_result.ngrams — char_bigrams, char_trigrams, word_bigrams, etc.
+    """
     features = {}
 
-    # The analyze output contains feature vectors under various keys
-    # depending on the analysis mode. Extract all numeric values.
-    analysis = analyze_result.get("analysis", analyze_result)
-
-    # Function word frequencies
-    if fw := analysis.get("function_words"):
-        for word, freq in fw.items():
-            features[f"fw_{word}"] = float(freq)
+    # Navigate to the analysis_result section
+    analysis = analyze_result.get("analysis_result", analyze_result)
 
     # Lexical metrics
     if lex := analysis.get("lexical"):
-        for key, val in lex.items():
-            if isinstance(val, (int, float)):
-                features[f"lex_{key}"] = float(val)
+        for key in [
+            "type_token_ratio", "hapax_ratio", "avg_word_length",
+            "mattr", "yules_k", "honores_r", "brunets_w", "hapax_dis_ratio",
+        ]:
+            if key in lex and isinstance(lex[key], (int, float)):
+                features[f"lex_{key}"] = float(lex[key])
 
     # Syntactic metrics
     if syn := analysis.get("syntactic"):
-        for key, val in syn.items():
-            if isinstance(val, (int, float)):
-                features[f"syn_{key}"] = float(val)
+        for key in [
+            "avg_sentence_length", "sentence_length_variance",
+            "interrogative_ratio", "exclamatory_ratio", "passive_voice_ratio",
+        ]:
+            if key in syn and isinstance(syn[key], (int, float)):
+                features[f"syn_{key}"] = float(syn[key])
 
-    # Readability
-    if read := analysis.get("readability"):
-        for key, val in read.items():
-            if isinstance(val, (int, float)):
-                features[f"read_{key}"] = float(val)
+    # Semantic (readability + discourse)
+    if sem := analysis.get("semantic"):
+        for key in [
+            "flesch_kincaid_grade", "gunning_fog_index", "coleman_liau_index",
+            "automated_readability_index", "avg_syllables_per_word",
+            "discourse_marker_ratio",
+        ]:
+            if key in sem and isinstance(sem[key], (int, float)):
+                features[f"read_{key}"] = float(sem[key])
 
-    # Character n-grams
-    for n in [2, 3, 4, 5]:
-        key = f"char_{n}grams"
-        if ngrams := analysis.get(key):
-            for gram, freq in list(ngrams.items())[:100]:
-                features[f"c{n}g_{gram}"] = float(freq)
+    # Stylometric metrics
+    if sty := analysis.get("stylometric"):
+        for key in [
+            "contraction_ratio", "hedge_word_ratio", "intensifier_ratio",
+            "comma_ratio", "semicolon_ratio", "colon_ratio",
+            "exclamation_ratio", "question_ratio",
+            "paragraph_length_variance", "short_paragraph_ratio",
+        ]:
+            if key in sty and isinstance(sty[key], (int, float)):
+                features[f"sty_{key}"] = float(sty[key])
 
-    # Word bigrams
-    if wbg := analysis.get("word_bigrams"):
-        for gram, freq in list(wbg.items())[:100]:
-            features[f"wbg_{gram}"] = float(freq)
+    # Function word frequencies
+    if fw := analysis.get("function_words"):
+        freqs = fw.get("frequencies", {})
+        for word, freq in freqs.items():
+            if isinstance(freq, (int, float)):
+                features[f"fw_{word}"] = float(freq)
+        # Also grab aggregate metrics
+        if isinstance(fw.get("function_word_ratio"), (int, float)):
+            features["fw_ratio"] = float(fw["function_word_ratio"])
+        if isinstance(fw.get("function_word_diversity"), (int, float)):
+            features["fw_diversity"] = float(fw["function_word_diversity"])
+
+    # Character n-grams (top 100 each)
+    if ngrams := analysis.get("ngrams"):
+        for ng_key, prefix in [
+            ("char_bigrams", "c2g"), ("char_trigrams", "c3g"),
+            ("char_fourgrams", "c4g"), ("char_fivegrams", "c5g"),
+        ]:
+            if grams := ngrams.get(ng_key):
+                for gram, freq in list(grams.items())[:100]:
+                    if isinstance(freq, (int, float)):
+                        features[f"{prefix}_{gram}"] = float(freq)
+
+        # Word bigrams (top 100)
+        if wbg := ngrams.get("word_bigrams"):
+            for gram, freq in list(wbg.items())[:100]:
+                if isinstance(freq, (int, float)):
+                    features[f"wbg_{gram}"] = float(freq)
 
     return features
 
@@ -250,35 +291,23 @@ def extract_single(doc: dict) -> dict[str, float] | None:
     text = doc.get("text", "")
     word_count = len(text.split())
     if word_count < 500:
-        print(f"  SKIP: doc has {word_count} words (need 500+)", flush=True)
         return None
 
-    print(f"  Processing doc ({word_count} words, source={doc.get('source', '?')})...", flush=True)
     features = {}
 
     # Detection features (tier-1 through advanced)
     detect_result = _run_provenance_detect(text)
     if detect_result:
-        det_features = _extract_detection_features(detect_result)
-        features.update(det_features)
-        print(f"    detect: {len(det_features)} features", flush=True)
-    else:
-        print(f"    detect: FAILED", flush=True)
+        features.update(_extract_detection_features(detect_result))
 
     # Stylometric features (740+)
     analyze_result = _run_provenance_analyze(text)
     if analyze_result:
-        sty_features = _extract_stylometric_features(analyze_result)
-        features.update(sty_features)
-        print(f"    analyze: {len(sty_features)} features", flush=True)
-    else:
-        print(f"    analyze: FAILED", flush=True)
+        features.update(_extract_stylometric_features(analyze_result))
 
     if not features:
-        print(f"    RESULT: no features extracted", flush=True)
         return None
 
-    print(f"    RESULT: {len(features)} total features", flush=True)
     return features
 
 
@@ -349,13 +378,21 @@ def extract_all(
 
     logger.info("Extraction complete. %d succeeded, %d failed.", len(docs) - failed, failed)
 
-    # Build unified feature name list (union of all observed features)
-    all_names: set[str] = set()
+    # Build feature name list — only keep features present in >= 10% of docs
+    # This prevents n-gram explosion (each doc has unique n-grams)
+    from collections import Counter
+    name_counts = Counter()
     for f in all_features:
-        all_names.update(f.keys())
+        name_counts.update(f.keys())
 
-    feature_names = sorted(all_names)
-    logger.info("Total unique features: %d", len(feature_names))
+    min_docs = max(2, int((len(docs) - failed) * 0.10))
+    feature_names = sorted(
+        name for name, count in name_counts.items() if count >= min_docs
+    )
+    logger.info(
+        "Total unique features: %d (kept %d appearing in >= %d docs)",
+        len(name_counts), len(feature_names), min_docs,
+    )
 
     # Build feature matrix
     n_docs = len(docs)
@@ -365,7 +402,8 @@ def extract_all(
     name_to_idx = {name: i for i, name in enumerate(feature_names)}
     for i, features in enumerate(all_features):
         for name, val in features.items():
-            matrix[i, name_to_idx[name]] = val
+            if name in name_to_idx:
+                matrix[i, name_to_idx[name]] = val
 
     # Remove rows that are all NaN (failed extractions)
     valid_mask = ~np.all(np.isnan(matrix), axis=1)

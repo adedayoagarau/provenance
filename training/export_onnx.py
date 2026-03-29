@@ -31,18 +31,17 @@ logger = logging.getLogger(__name__)
 
 
 def export_xgboost(model_dir: Path, n_features: int) -> Path:
-    """Export XGBoost model to ONNX format."""
-    logger.info("Exporting XGBoost to ONNX...")
+    """Export Gradient Boosting model to ONNX format."""
+    logger.info("Exporting Gradient Boosting to ONNX...")
 
-    import xgboost as xgb
-    from onnxmltools import convert_xgboost
-    from onnxmltools.convert.common.data_types import FloatTensorType
+    from skl2onnx import convert_sklearn
+    from skl2onnx.common.data_types import FloatTensorType
 
-    model = xgb.Booster()
-    model.load_model(str(model_dir / "xgboost_model.json"))
+    with open(model_dir / "xgboost_model.pkl", "rb") as f:
+        model = pickle.load(f)
 
     initial_type = [("input", FloatTensorType([None, n_features]))]
-    onnx_model = convert_xgboost(model, initial_types=initial_type)
+    onnx_model = convert_sklearn(model, initial_types=initial_type)
 
     output_path = model_dir / "xgboost.onnx"
     onnx.save_model(onnx_model, str(output_path))

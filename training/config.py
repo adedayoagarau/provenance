@@ -102,6 +102,8 @@ STABILITY_BOOTSTRAP_N = 100        # Number of bootstrap samples
 STABILITY_THRESHOLD = 0.80         # Keep features selected in >80% of runs
 TARGET_FEATURE_COUNT = (50, 75)    # Target range for final feature set
 
+RANDOM_SEED = 42
+
 # ─── Model Training ──────────────────────────────────────────────────────────
 
 # XGBoost hyperparameters (exact values from ML_PIPELINE_IMPLEMENTATION_GUIDE)
