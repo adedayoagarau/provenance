@@ -1,30 +1,22 @@
-"""Provenance AutoResearch — Autonomous AI Research Agent.
+"""Provenance Research Council -- Autonomous AI Detection Research.
 
-An autonomous research swarm that continuously improves Provenance's
-capabilities across 9 research domains:
+An autonomous council of AI researchers that analyzes 1M+ labeled text
+samples to discover fundamental truths about how AI-generated text
+differs from human text.
 
-1. AI Detection — defeat evasion, reduce false positives
-2. Human Voice — model unique stylistic fingerprints
-3. Logic & Psychology — detect reasoning patterns, cognitive signatures
-4. Tone & Emotion — classify register, formality, irony, sarcasm
-5. Writer Identity — build rich identity models (EER minimization)
-6. Adversarial Robustness — resist humanizers, paraphrasers, style transfer
-7. Cross-Linguistic — handle NNES, L1 interference, code-switching
-8. Temporal Evolution — model style drift, detect AI-assistance onset
-9. Document Forensics — multi-author detection, copy-paste boundaries
-
-Architecture follows the autoresearch pattern:
-- program.md: Human instructions for the agent
-- config.py: Configuration (humans edit this)
-- experiment.py: Experiment runner (read-only during experiments)
-- evaluate.py: Evaluation harness (read-only during experiments)
-- domains/*.py: Research modules (agent edits these)
-- results/results.tsv: Experiment log
+Research pillars:
+1. Statistical Signatures -- deep feature analysis (entropy, burstiness, Zipf)
+2. Model Fingerprinting -- per-model detection signatures
+3. Evasion Resistance -- what survives humanization attacks
+4. Human Voice Psychology -- cognitive and psychological markers
+5. Fairness & Equity -- NNES protection, cross-cultural calibration
+6. Temporal Drift -- how AI text evolves across model generations
+7. Frontier Ideas -- novel approaches the field is missing
 
 Usage:
-    python -m autoresearch.experiment --domain all
-    python -m autoresearch.experiment --list-domains
-    python -m autoresearch.evaluate
+    python3 -m autoresearch.council --full-report
+    python3 -m autoresearch.council --analyze ai_vs_human
+    python3 -m autoresearch.council --memo "topic"
 """
 
-__version__ = "0.1.0"
+__version__ = "2.0.0"
