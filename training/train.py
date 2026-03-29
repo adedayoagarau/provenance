@@ -25,7 +25,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import xgboost as xgb
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import StandardScaler
@@ -98,14 +98,12 @@ def train_xgboost(
     y_val: np.ndarray,
     use_optuna: bool = True,
 ) -> tuple:
-    """Train XGBoost with optional Optuna hyperparameter search.
+    """Train gradient boosting classifier.
 
-    Uses the sklearn-compatible XGBClassifier API for better stability
-    on Apple Silicon / Python 3.14.
+    Uses sklearn GradientBoostingClassifier instead of XGBoost native API
+    to avoid segfaults on Python 3.14 + Apple Silicon.
     """
-    from xgboost import XGBClassifier
-
-    logger.info("Training XGBoost...")
+    logger.info("Training Gradient Boosting...")
 
     scaler = StandardScaler()
     X_train_s = scaler.fit_transform(X_train)
@@ -117,74 +115,44 @@ def train_xgboost(
         optuna.logging.set_verbosity(optuna.logging.WARNING)
 
         def objective(trial):
-            params = {
-                "max_depth": trial.suggest_int("max_depth", 4, 8),
-                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
-                "n_estimators": 300,
-                "subsample": trial.suggest_float("subsample", 0.6, 1.0),
-                "colsample_bytree": trial.suggest_float("colsample_bytree", 0.6, 1.0),
-                "reg_alpha": trial.suggest_float("reg_alpha", 1e-3, 10.0, log=True),
-                "reg_lambda": trial.suggest_float("reg_lambda", 1e-3, 10.0, log=True),
-                "scale_pos_weight": trial.suggest_float("scale_pos_weight", 1.0, 2.0),
-                "objective": "binary:logistic",
-                "eval_metric": "auc",
-                "verbosity": 0,
-                "random_state": config.RANDOM_SEED,
-            }
-
-            model = XGBClassifier(**params)
-            model.fit(
-                X_train_s, y_train,
-                eval_set=[(X_val_s, y_val)],
-                verbose=False,
+            model = GradientBoostingClassifier(
+                max_depth=trial.suggest_int("max_depth", 4, 8),
+                learning_rate=trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+                n_estimators=200,
+                subsample=trial.suggest_float("subsample", 0.6, 1.0),
+                random_state=config.RANDOM_SEED,
             )
-
+            model.fit(X_train_s, y_train)
             preds = model.predict_proba(X_val_s)[:, 1]
             return tpr_at_fpr(y_val, preds, target_fpr=0.02)
 
         study = optuna.create_study(direction="maximize")
-        study.optimize(objective, n_trials=50, timeout=600)
+        study.optimize(objective, n_trials=30, timeout=600)
 
         logger.info("Optuna best TPR@2%%FPR: %.4f", study.best_value)
         logger.info("Optuna best params: %s", study.best_params)
 
-        best_params = {
+        model = GradientBoostingClassifier(
             **study.best_params,
-            "objective": "binary:logistic",
-            "eval_metric": "auc",
-            "n_estimators": config.XGBOOST_PARAMS["n_estimators"],
-            "random_state": config.RANDOM_SEED,
-            "verbosity": 1,
-        }
+            n_estimators=config.XGBOOST_PARAMS["n_estimators"],
+            random_state=config.RANDOM_SEED,
+        )
     else:
-        best_params = {
-            "max_depth": config.XGBOOST_PARAMS["max_depth"],
-            "learning_rate": config.XGBOOST_PARAMS["learning_rate"],
-            "n_estimators": config.XGBOOST_PARAMS["n_estimators"],
-            "subsample": config.XGBOOST_PARAMS["subsample"],
-            "colsample_bytree": config.XGBOOST_PARAMS["colsample_bytree"],
-            "reg_alpha": config.XGBOOST_PARAMS["reg_alpha"],
-            "reg_lambda": config.XGBOOST_PARAMS["reg_lambda"],
-            "scale_pos_weight": config.XGBOOST_PARAMS["scale_pos_weight"],
-            "objective": "binary:logistic",
-            "eval_metric": "auc",
-            "random_state": config.RANDOM_SEED,
-            "verbosity": 1,
-        }
+        model = GradientBoostingClassifier(
+            max_depth=config.XGBOOST_PARAMS["max_depth"],
+            learning_rate=config.XGBOOST_PARAMS["learning_rate"],
+            n_estimators=config.XGBOOST_PARAMS["n_estimators"],
+            subsample=config.XGBOOST_PARAMS["subsample"],
+            random_state=config.RANDOM_SEED,
+        )
 
-    # Final training with best params
-    model = XGBClassifier(**best_params)
-    model.fit(
-        X_train_s, y_train,
-        eval_set=[(X_train_s, y_train), (X_val_s, y_val)],
-        verbose=50,
-    )
+    model.fit(X_train_s, y_train)
 
     preds = model.predict_proba(X_val_s)[:, 1]
     val_tpr = tpr_at_fpr(y_val, preds, target_fpr=0.02)
     val_auc = auc(*roc_curve(y_val, preds)[:2])
 
-    logger.info("XGBoost — AUC: %.4f, TPR@2%%FPR: %.4f", val_auc, val_tpr)
+    logger.info("Gradient Boosting — AUC: %.4f, TPR@2%%FPR: %.4f", val_auc, val_tpr)
 
     return model, scaler
 
@@ -465,7 +433,8 @@ def train_final_models(
     logger.info("Final Ensemble — AUC: %.4f, TPR@2%%FPR: %.4f", final_auc, final_tpr)
 
     # Save models
-    xgb_model.save_model(str(output_dir / "xgboost_model.json"))
+    with open(output_dir / "xgboost_model.pkl", "wb") as f:
+        pickle.dump(xgb_model, f)
     torch.save(nn_model.state_dict(), str(output_dir / "neural_net.pt"))
     with open(output_dir / "svm_model.pkl", "wb") as f:
         pickle.dump(svm_model, f)
