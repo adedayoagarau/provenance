@@ -322,25 +322,34 @@ def run_selection_pipeline(
     )
     reports.append(report)
 
-    # Stage 3: LASSO
-    X, feature_names, report = stage3_lasso(
-        X, y, feature_names, cv_folds=config.LASSO_CV_FOLDS
-    )
-    reports.append(report)
+    # Stage 3: LASSO (skip if already at or below target)
+    if len(feature_names) > target_max:
+        X, feature_names, report = stage3_lasso(
+            X, y, feature_names, cv_folds=config.LASSO_CV_FOLDS
+        )
+        reports.append(report)
+    else:
+        logger.info("Stage 3: Skipping LASSO (%d features already <= target %d)", len(feature_names), target_max)
 
-    # Stage 4: RFE
-    X, feature_names, report = stage4_rfe(
-        X, y, feature_names, target_features=target_max, step_fraction=config.RFE_STEP
-    )
-    reports.append(report)
+    # Stage 4: RFE (needs at least 2 features)
+    if len(feature_names) > target_max and len(feature_names) >= 2:
+        X, feature_names, report = stage4_rfe(
+            X, y, feature_names, target_features=target_max, step_fraction=config.RFE_STEP
+        )
+        reports.append(report)
+    else:
+        logger.info("Stage 4: Skipping RFE (%d features, need >%d and >=2)", len(feature_names), target_max)
 
-    # Stage 5: Stability selection
-    X, feature_names, report = stage5_stability_selection(
-        X, y, feature_names,
-        n_bootstrap=config.STABILITY_BOOTSTRAP_N,
-        threshold=config.STABILITY_THRESHOLD,
-    )
-    reports.append(report)
+    # Stage 5: Stability selection (needs at least 2 features)
+    if len(feature_names) >= 2:
+        X, feature_names, report = stage5_stability_selection(
+            X, y, feature_names,
+            n_bootstrap=config.STABILITY_BOOTSTRAP_N,
+            threshold=config.STABILITY_THRESHOLD,
+        )
+        reports.append(report)
+    else:
+        logger.info("Stage 5: Skipping stability selection (%d features)", len(feature_names))
 
     # Check target range
     n_final = len(feature_names)
