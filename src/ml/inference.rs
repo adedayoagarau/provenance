@@ -82,7 +82,7 @@ impl OnnxModel {
     }
 
     #[cfg(feature = "onnx")]
-    pub fn predict(&self, features: &FeatureVector) -> Result<super::models::Prediction> {
+    pub fn predict(&mut self, features: &FeatureVector) -> Result<super::models::Prediction> {
         let n = features.len();
         let data: Vec<f32> = features.values.iter().map(|&x| x as f32).collect();
 
@@ -101,7 +101,7 @@ impl OnnxModel {
         let class_probabilities = if outputs.len() > 1 {
             if let Ok(probs_tensor) = outputs[1].try_extract_tensor::<f32>() {
                 let probs_slice = probs_tensor.1;
-                let n_classes = self.info.class_labels.len();
+                let _n_classes = self.info.class_labels.len();
                 self.info.class_labels.iter().enumerate()
                     .map(|(i, l)| (l.clone(), if i < probs_slice.len() { probs_slice[i] as f64 } else { 0.0 }))
                     .collect()
@@ -123,7 +123,7 @@ impl OnnxModel {
         })
     }
 
-    pub fn predict_batch(&self, features: &[FeatureVector]) -> Result<Vec<super::models::Prediction>> {
+    pub fn predict_batch(&mut self, features: &[FeatureVector]) -> Result<Vec<super::models::Prediction>> {
         features.iter().map(|f| self.predict(f)).collect()
     }
 
