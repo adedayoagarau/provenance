@@ -118,15 +118,18 @@ impl ModelRegistry {
 pub struct OnnxModel {
     info: ModelInfo,
     #[cfg(feature = "onnx")]
-    session: ort::Session,
+    session: ort::session::Session,
 }
 
 impl OnnxModel {
     /// Load an ONNX model from disk.
     #[cfg(feature = "onnx")]
     pub fn load(info: &ModelInfo) -> Result<Self> {
-        let session = ort::Session::builder()
-            .and_then(|b| b.commit_from_file(&info.path))
+        let session = ort::session::Session::builder()
+            .map_err(|e| ProvenanceError::AnalysisError {
+                reason: format!("Failed to create session builder: {e}"),
+            })?
+            .commit_from_file(&info.path)
             .map_err(|e| ProvenanceError::AnalysisError {
                 reason: format!("Failed to load ONNX model '{}': {e}", info.name),
             })?;
@@ -155,23 +158,21 @@ impl OnnxModel {
 
         let input = Array2::from_shape_vec(
             (1, features.len()),
-            features.values.clone(),
+            features.values.iter().map(|&x| x as f32).collect(),
         )
         .map_err(|e| ProvenanceError::AnalysisError {
             reason: format!("Feature shape error: {e}"),
         })?;
 
-        let outputs = self.session.run(
-            ort::inputs!["input" => input.view()].map_err(|e| {
-                ProvenanceError::AnalysisError {
-                    reason: format!("ONNX input error: {e}"),
-                }
-            })?,
-        ).map_err(|e| {
-            ProvenanceError::AnalysisError {
+        let input_value = ort::value::Value::from_array(input.view())
+            .map_err(|e| ProvenanceError::AnalysisError {
+                reason: format!("ONNX input error: {e}"),
+            })?;
+
+        let outputs = self.session.run(ort::inputs![input_value])
+            .map_err(|e| ProvenanceError::AnalysisError {
                 reason: format!("ONNX inference error: {e}"),
-            }
-        })?;
+            })?;
 
         // Parse output (assumes sklearn ONNX format: label + probabilities)
         let label_idx = outputs[0]
@@ -190,13 +191,13 @@ impl OnnxModel {
 
         // Try to extract probabilities
         let class_probabilities = if outputs.len() > 1 {
-            if let Ok(probs) = outputs[1].try_extract_tensor::<f64>() {
-                let probs_view = probs.view();
+            if let Ok(probs) = outputs[1].try_extract_tensor::<f32>() {
+                let probs_view: ndarray::ArrayViewD<'_, f32> = probs.view();
                 self.info
                     .class_labels
                     .iter()
                     .enumerate()
-                    .map(|(i, l)| (l.clone(), probs_view[[0, i]]))
+                    .map(|(i, l)| (l.clone(), probs_view[[0, i]] as f64))
                     .collect()
             } else {
                 vec![(label.clone(), 1.0)]
@@ -302,12 +303,11 @@ mod tests {
             path: PathBuf::from("nonexistent.onnx"),
         };
 
-        let model = OnnxModel::load(&info).unwrap();
-        assert_eq!(model.info().name, "test");
-
-        // Without onnx feature, predict should return an error
         #[cfg(not(feature = "onnx"))]
         {
+            let model = OnnxModel::load(&info).unwrap();
+            assert_eq!(model.info().name, "test");
+
             let fv = FeatureVector {
                 names: vec!["f1".into(), "f2".into()],
                 values: vec![1.0, 2.0],

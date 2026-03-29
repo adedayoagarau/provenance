@@ -129,7 +129,7 @@ pub struct MlScorer {
     calibration: CalibrationParams,
     /// ONNX model sessions (XGBoost, Neural Net, SVM).
     #[cfg(feature = "onnx")]
-    sessions: Vec<ort::Session>,
+    sessions: Vec<ort::session::Session>,
 }
 
 impl MlScorer {
@@ -166,8 +166,8 @@ impl MlScorer {
             let mut sessions = Vec::new();
             for model_name in &config.models {
                 let model_path = models_dir.join(model_name);
-                match ort::Session::builder()
-                    .and_then(|b| b.commit_from_file(&model_path))
+                match ort::session::Session::builder()
+                    .and_then(|b: ort::session::SessionBuilder| b.commit_from_file(&model_path))
                 {
                     Ok(session) => sessions.push(session),
                     Err(e) => {
@@ -293,12 +293,13 @@ impl MlScorer {
         let mut ensemble_score = 0.0;
 
         for (i, session) in self.sessions.iter().enumerate() {
+            let input_value = ort::value::Value::from_array(input.view())
+                .map_err(|e| ProvenanceError::AnalysisError {
+                    reason: format!("ONNX input error for model {i}: {e}"),
+                })?;
+
             let outputs = session
-                .run(ort::inputs!["input" => input.view()].map_err(|e| {
-                    ProvenanceError::AnalysisError {
-                        reason: format!("ONNX input error for model {i}: {e}"),
-                    }
-                })?)
+                .run(ort::inputs![input_value])
                 .map_err(|e| ProvenanceError::AnalysisError {
                     reason: format!("ONNX inference error for model {i}: {e}"),
                 })?;
@@ -306,15 +307,8 @@ impl MlScorer {
             // Extract probability score from model output
             let score = if outputs.len() > 1 {
                 // sklearn format: [labels, probabilities]
-                if let Ok(probs) = outputs[1].try_extract_tensor::<f64>() {
-                    let view = probs.view();
-                    if view.shape().len() == 2 && view.shape()[1] > 1 {
-                        view[[0, 1]] // Probability of class 1 (AI)
-                    } else {
-                        view[[0, 0]]
-                    }
-                } else if let Ok(probs) = outputs[1].try_extract_tensor::<f32>() {
-                    let view = probs.view();
+                if let Ok(probs) = outputs[1].try_extract_tensor::<f32>() {
+                    let view: ndarray::ArrayViewD<'_, f32> = probs.view();
                     if view.shape().len() == 2 && view.shape()[1] > 1 {
                         view[[0, 1]] as f64
                     } else {
@@ -326,7 +320,8 @@ impl MlScorer {
             } else {
                 // PyTorch format: single output
                 if let Ok(out) = outputs[0].try_extract_tensor::<f32>() {
-                    out.view()[[0, 0]] as f64
+                    let view: ndarray::ArrayViewD<'_, f32> = out.view();
+                    view[[0, 0]] as f64
                 } else {
                     0.5
                 }
