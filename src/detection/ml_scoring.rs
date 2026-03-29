@@ -292,7 +292,7 @@ impl MlScorer {
             let score = if outputs.len() > 1 {
                 // sklearn format: [labels, probabilities]
                 if let Ok(probs_tensor) = outputs[1].try_extract_tensor::<f32>() {
-                    let probs = probs_tensor.as_slice().unwrap_or(&[0.5]);
+                    let probs = probs_tensor.1;
                     // Class 1 (AI) probability — second element if binary
                     if probs.len() > 1 { probs[1] as f64 } else { probs[0] as f64 }
                 } else {
@@ -301,7 +301,7 @@ impl MlScorer {
             } else {
                 // PyTorch format: single output
                 if let Ok(out_tensor) = outputs[0].try_extract_tensor::<f32>() {
-                    let data = out_tensor.as_slice().unwrap_or(&[0.5]);
+                    let data = out_tensor.1;
                     data[0] as f64
                 } else {
                     0.5
