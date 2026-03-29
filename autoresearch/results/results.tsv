@@ -98413,3 +98413,4 @@ timestamp	commit	domain	hypothesis	metric_before	metric_after	delta	memory_mb	du
 2026-03-29T21:22:12.656957+00:00	254572c6b	adversarial_robustness	Humanizer tools produce detectable collocation breaks	0.000000	0.082569	+0.082569	0.0	0.0	improvement	
 2026-03-29T21:22:12.920296+00:00	4e623bfa0	cross_linguistic	L1 interference patterns can identify a writer's native language with high accuracy	0.000000	0.000000	+0.000000	0.0	0.0	error	look-behind requires fixed-width pattern
 2026-03-29T21:22:12.983969+00:00	4e623bfa0	temporal_evolution	Vocabulary growth rate is a reliable indicator of human authorship across time	0.000000	0.890917	+0.890917	0.0	0.0	improvement	
+2026-03-29T21:22:13.219733+00:00	66d3e629f	document_forensics	Style discontinuity detection at paragraph boundaries reveals multi-author documents	0.500000	0.981651	+0.481651	0.0	0.0	improvement	
