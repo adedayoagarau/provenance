@@ -95,12 +95,12 @@ impl OnnxModel {
         // Parse sklearn ONNX output: [labels, probabilities]
         let label_tensor = outputs[0].try_extract_tensor::<i64>()
             .map_err(|e| ProvenanceError::AnalysisError { reason: format!("Output parse error: {e}") })?;
-        let idx = label_tensor.as_slice().unwrap_or(&[0])[0] as usize;
+        let idx = label_tensor.1[0] as usize;
         let label = self.info.class_labels.get(idx).cloned().unwrap_or_else(|| format!("class_{idx}"));
 
         let class_probabilities = if outputs.len() > 1 {
             if let Ok(probs_tensor) = outputs[1].try_extract_tensor::<f32>() {
-                let probs_slice = probs_tensor.as_slice().unwrap_or(&[]);
+                let probs_slice = probs_tensor.1;
                 let n_classes = self.info.class_labels.len();
                 self.info.class_labels.iter().enumerate()
                     .map(|(i, l)| (l.clone(), if i < probs_slice.len() { probs_slice[i] as f64 } else { 0.0 }))
