@@ -402,7 +402,8 @@ def extract_all(
     name_to_idx = {name: i for i, name in enumerate(feature_names)}
     for i, features in enumerate(all_features):
         for name, val in features.items():
-            matrix[i, name_to_idx[name]] = val
+            if name in name_to_idx:
+                matrix[i, name_to_idx[name]] = val
 
     # Remove rows that are all NaN (failed extractions)
     valid_mask = ~np.all(np.isnan(matrix), axis=1)
