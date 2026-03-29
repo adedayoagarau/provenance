@@ -5660,3 +5660,9 @@ timestamp	commit	domain	hypothesis	metric_before	metric_after	delta	memory_mb	du
 2026-03-29T19:12:46.710258+00:00	17a3d16	cross_linguistic	L1 interference patterns can identify a writer's native language with high accuracy	0.000000	0.000000	+0.000000	0.0	0.0	error	look-behind requires fixed-width pattern
 2026-03-29T19:12:46.728508+00:00	17a3d16	temporal_evolution	Vocabulary growth rate is a reliable indicator of human authorship across time	0.000000	0.890917	+0.890917	0.0	0.0	improvement	
 2026-03-29T19:12:46.800005+00:00	8d6e605	document_forensics	Style discontinuity detection at paragraph boundaries reveals multi-author documents	0.500000	0.981651	+0.481651	0.0	0.0	improvement	
+2026-03-29T19:12:46.869846+00:00	ebbd2fd	ai_detection	Entropy variance as discriminator: AI text has lower per-sentence entropy variance than human text	0.000000	0.000000	+0.000000	24640.0	0.0	null	Tested: Entropy variance as discriminator: AI text has lower per-sentence entropy varian
+2026-03-29T19:12:46.890771+00:00	ebbd2fd	human_voice	Sentence rhythm as fingerprint: clause-level cadence patterns are more distinctive than word-level f	0.000000	0.000000	+0.000000	0.0	0.0	error	Need at least 2 authors for voice comparison
+2026-03-29T19:12:46.909987+00:00	ebbd2fd	logic_psychology	Argument structure detection using marker-based parsing with contextual disambiguation	0.000000	0.000000	+0.000000	0.0	0.0	null	
+2026-03-29T19:12:46.939768+00:00	ebbd2fd	tone_analysis	Formality gradient scoring using lexical density and sentence structure complexity	0.000000	0.000000	+0.000000	0.0	0.0	null	
+2026-03-29T19:12:46.958556+00:00	ebbd2fd	writer_identity	Character trigram frequency profiles are more robust identity features than word-level features	0.200000	0.200000	+0.000000	0.0	0.0	error	Need at least 2 authors
+2026-03-29T19:12:46.986744+00:00	ebbd2fd	adversarial_robustness	Humanizer tools produce detectable collocation breaks	0.000000	0.082569	+0.082569	0.0	0.0	improvement	
