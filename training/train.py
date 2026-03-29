@@ -463,6 +463,10 @@ def train_final_models(
     with open(output_dir / "training_summary.json", "w") as f:
         json.dump(summary, f, indent=2)
 
+    # Save validation predictions and labels for calibration/evaluation
+    np.save(output_dir / "val_predictions.npy", ensemble_preds)
+    np.save(output_dir / "val_labels.npy", y_val)
+
     logger.info("Models saved to %s", output_dir)
     return xgb_model, nn_model, svm_model, scaler, ensemble_preds, y_val
 
