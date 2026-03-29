@@ -265,14 +265,8 @@ impl MlScorer {
     /// Run inference through all 3 ONNX models and return ensemble score.
     #[cfg(feature = "onnx")]
     pub fn predict(&self, normalized_features: &[f64]) -> Result<f64> {
-        let input_data: Vec<f32> = normalized_features.iter().map(|&x| x as f32).collect();
-        let input = ndarray::Array2::from_shape_vec(
-            (1, normalized_features.len()),
-            input_data,
-        )
-        .map_err(|e| ProvenanceError::AnalysisError {
-            reason: format!("Feature shape error: {e}"),
-        })?;
+        let n = normalized_features.len();
+        let data: Vec<f32> = normalized_features.iter().map(|&x| x as f32).collect();
 
         let weights = [
             self.config.ensemble_weights.xgboost,
@@ -283,10 +277,13 @@ impl MlScorer {
         let mut ensemble_score = 0.0;
 
         for (i, session) in self.sessions.iter().enumerate() {
-            let outputs = session
-                .run(ort::inputs![input.clone()].map_err(|e| ProvenanceError::AnalysisError {
+            let value = ort::value::Value::from_array(([1usize, n], data.clone()))
+                .map_err(|e| ProvenanceError::AnalysisError {
                     reason: format!("ONNX input error for model {i}: {e}"),
-                })?)
+                })?;
+
+            let outputs = session
+                .run(ort::inputs![value])
                 .map_err(|e| ProvenanceError::AnalysisError {
                     reason: format!("ONNX inference error for model {i}: {e}"),
                 })?;
@@ -294,15 +291,17 @@ impl MlScorer {
             // Extract probability score from model output
             let score = if outputs.len() > 1 {
                 // sklearn format: [labels, probabilities]
-                if let Ok((shape, probs_data)) = outputs[1].try_extract_raw_tensor::<f32>() {
-                    let n_classes = if shape.len() > 1 { shape[1] as usize } else { 1 };
-                    if n_classes > 1 { probs_data[1] as f64 } else { probs_data[0] as f64 }
+                if let Ok(probs_tensor) = outputs[1].try_extract_tensor::<f32>() {
+                    let probs = probs_tensor.as_slice().unwrap_or(&[0.5]);
+                    // Class 1 (AI) probability — second element if binary
+                    if probs.len() > 1 { probs[1] as f64 } else { probs[0] as f64 }
                 } else {
                     0.5
                 }
             } else {
                 // PyTorch format: single output
-                if let Ok((_, data)) = outputs[0].try_extract_raw_tensor::<f32>() {
+                if let Ok(out_tensor) = outputs[0].try_extract_tensor::<f32>() {
+                    let data = out_tensor.as_slice().unwrap_or(&[0.5]);
                     data[0] as f64
                 } else {
                     0.5
