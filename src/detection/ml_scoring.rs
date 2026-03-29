@@ -264,7 +264,7 @@ impl MlScorer {
 
     /// Run inference through all 3 ONNX models and return ensemble score.
     #[cfg(feature = "onnx")]
-    pub fn predict(&self, normalized_features: &[f64]) -> Result<f64> {
+    pub fn predict(&mut self, normalized_features: &[f64]) -> Result<f64> {
         let n = normalized_features.len();
         let data: Vec<f32> = normalized_features.iter().map(|&x| x as f32).collect();
 
@@ -276,7 +276,7 @@ impl MlScorer {
 
         let mut ensemble_score = 0.0;
 
-        for (i, session) in self.sessions.iter().enumerate() {
+        for (i, session) in self.sessions.iter_mut().enumerate() {
             let value = ort::value::Value::from_array(([1usize, n], data.clone()))
                 .map_err(|e| ProvenanceError::AnalysisError {
                     reason: format!("ONNX input error for model {i}: {e}"),
@@ -328,7 +328,7 @@ impl MlScorer {
     ///
     /// Returns a DetectionScore with the ML-calibrated score and classification.
     pub fn score(
-        &self,
+        &mut self,
         features: &super::DetectionFeatures,
     ) -> Result<DetectionScore> {
         // Step 1: Extract selected features

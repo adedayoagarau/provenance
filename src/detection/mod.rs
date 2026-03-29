@@ -120,7 +120,7 @@ pub fn detect(text: &str) -> Result<DetectionResult> {
         let models_dir = std::path::Path::new("models");
         if ml_scoring::ml_models_available(models_dir) {
             ml_scoring::MlScorer::try_load(models_dir)
-                .and_then(|scorer| scorer.score(&final_features).ok())
+                .and_then(|mut scorer| scorer.score(&final_features).ok())
         } else {
             None
         }
