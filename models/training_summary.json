@@ -1,0 +1,13 @@
+{
+  "final_auc": 0.9999997816281765,
+  "final_tpr_at_2pct_fpr": 1.0,
+  "n_train": 260636,
+  "n_val": 65160,
+  "n_features": 73,
+  "ensemble_weights": {
+    "xgboost": 0.7,
+    "neural_net": 0.2,
+    "svm": 0.1
+  },
+  "gate1_pass": true
+}

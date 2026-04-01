@@ -35,8 +35,8 @@ GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 # ─── Data Collection Targets ─────────────────────────────────────────────────
 
 HUMAN_TARGET = 50_000
-AI_TARGET = 75_000
-HUMANIZED_TARGET = 25_000  # Subset of AI samples run through humanizers
+AI_TARGET = 5_000
+HUMANIZED_TARGET = 1_000  # Subset of AI samples run through humanizers
 
 # Human source distribution (fractions of HUMAN_TARGET)
 HUMAN_SOURCES = {

@@ -1,0 +1,10 @@
+{
+  "threshold": 1.7826096154749393e-12,
+  "target_fpr": 0.02,
+  "actual_fpr": 0.00038752179810114316,
+  "actual_tpr": 1.0,
+  "ece": 7.355741825046448e-05,
+  "brier_score": 0.00011663878625338251,
+  "gate1_pass": true,
+  "gate2_pass": true
+}

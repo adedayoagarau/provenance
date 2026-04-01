@@ -1,0 +1,41 @@
+[
+  {
+    "name": "xgboost",
+    "version": "1.0.0",
+    "model_type": "xgboost",
+    "feature_set": "selected",
+    "n_features": 73,
+    "class_labels": [
+      "human",
+      "ai"
+    ],
+    "training_accuracy": null,
+    "path": "../models/xgboost.onnx"
+  },
+  {
+    "name": "neural_net",
+    "version": "1.0.0",
+    "model_type": "neural_net",
+    "feature_set": "selected",
+    "n_features": 73,
+    "class_labels": [
+      "human",
+      "ai"
+    ],
+    "training_accuracy": null,
+    "path": "../models/neural_net.onnx"
+  },
+  {
+    "name": "svm",
+    "version": "1.0.0",
+    "model_type": "svm",
+    "feature_set": "selected",
+    "n_features": 73,
+    "class_labels": [
+      "human",
+      "ai"
+    ],
+    "training_accuracy": null,
+    "path": "../models/svm.onnx"
+  }
+]
